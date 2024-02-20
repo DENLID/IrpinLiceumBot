@@ -7,7 +7,7 @@ from register import register
 from handlers import send_menu, help_message
 from states import Communication
 import keyboards
-from . import config
+import config
 
 router = Router()
 
