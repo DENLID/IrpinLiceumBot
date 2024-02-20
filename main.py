@@ -5,7 +5,7 @@ from threading import Thread
 import handlers
 import callbacks
 from air_alert import air_alert
-import config
+from . import config
 
 async def main():
     bot = Bot(config.bot_token, parse_mode="HTML")

@@ -11,7 +11,7 @@ from register import register
 from update_info import update_info_ms
 from states import Communication
 import keyboards
-import config
+from . import config
 
 bot = Bot(config.bot_token, parse_mode="HTML")
 router = Router()

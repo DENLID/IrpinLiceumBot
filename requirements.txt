@@ -2,3 +2,5 @@ aiogram
 pymongo
 motor
 dnspython
+pytz
+openpyxl

@@ -3,7 +3,7 @@ from telebot import TeleBot
 from pytz import timezone
 from datetime import datetime
 import requests
-import config
+from . import config
 
 bot = TeleBot(config.air_alert_token, parse_mode="HTML")
 
