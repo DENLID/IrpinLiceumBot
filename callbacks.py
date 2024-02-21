@@ -11,7 +11,7 @@ import config
 
 router = Router()
 
-cluster = MongoClient("mongodb+srv://DENLID:jok674527@cluster0.6xtz3yk.mongodb.net/?retryWrites=true&w=majority")
+cluster = MongoClient(config.mongo_api)
 users = cluster.ILdb.users
 
 
