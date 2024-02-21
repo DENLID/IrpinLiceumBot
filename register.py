@@ -1,6 +1,7 @@
 from pymongo import MongoClient
+import config
 
-cluster = MongoClient("mongodb+srv://DENLID:jok674527@cluster0.6xtz3yk.mongodb.net/?retryWrites=true&w=majority")
+cluster = MongoClient(config.mongo_api)
 users = cluster.ILdb.users
 
 def register(message):

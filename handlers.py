@@ -16,7 +16,7 @@ import config
 bot = Bot(config.bot_token, parse_mode="HTML")
 router = Router()
 
-cluster = MongoClient("mongodb+srv://DENLID:jok674527@cluster0.6xtz3yk.mongodb.net/?retryWrites=true&w=majority")
+cluster = MongoClient(config.mongo_api)
 users = cluster.ILdb.users
 ban_list = cluster.ILdb.ban_list
 
