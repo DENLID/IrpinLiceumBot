@@ -1,7 +1,7 @@
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
-from aiogram import Router, Bot
+from aiogram import Router, Bot, F
 from pytz import timezone
 from datetime import datetime
 from pymongo import MongoClient
@@ -95,13 +95,37 @@ async def news(message: Message, state: FSMContext):
 
 @router.message(Command('ban'))
 async def ban(message: Message, state: FSMContext):
-    id = int(message.text.split(maxsplit=1)[1])
-    username = users.find_one({"_id": id})["username"]
-    ban_list.insert_one({
-        "_id": id,
-        "username": username
-    })
-    await message.answer("Пользователь забанен")
+    if message.chat.id == config.admin_group:
+        id = int(message.text.split(maxsplit=1)[1])
+        user_exist = users.find_one({"_id": id})
+        if user_exist != None:
+            username = user_exist["username"]
+            ban_list.insert_one({
+                "_id": id,
+                "username": username
+            })
+            await message.answer("Користувач успішно забанений")
+        else:
+            await message.answer("Невірний ID користувача")
+        
+@router.message(Command('unban'))
+async def ban(message: Message):
+    if message.chat.id == config.admin_group:
+        id = int(message.text.split(maxsplit=1)[1])
+        user_exist = users.find_one({"_id": id})
+        if user_exist != None:
+            username = user_exist["username"]
+            ban_list.delete_one({
+                "_id": id,
+                "username": username
+            })
+            await message.answer("Користувач успішно розбанений")
+        else:
+            await message.answer("Невірний ID користувача")
+
+@router.message(Command('getmyid'))
+async def getmyid(message: Message):
+    await message.answer(f"Ваш телеграм айді: <code>{message.chat.id}</code>")
 
 @router.message(Communication.news_state)
 async def news_state_func(message: Message):
@@ -113,18 +137,6 @@ async def news_state_func(message: Message):
                 except:
                     pass
     
-async def send_to_admin(message):
-    await message.forward(config.admin_group)
-    sent = await message.forward(message.chat.id)
-    await sent.delete()
-    if sent.forward_from == None:
-        await message.answer("""
-У вас в налаштуваннях 
-<b>Приватність і безпека 
-(конфіденційність)</b> пересилання 
-повідомлень вибрано <b>Ніхто</b>.
-Тому адміни не зможуть вам відповісти.
-""")
 
 async def wad_message(message):
     webdata = message.web_app_data.data
@@ -137,28 +149,39 @@ async def wad_message(message):
 """)
     update_info_ms("ms.xlsx", data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms"])
 
+@router.message(F.chat.func(lambda message: message.web_app_data != None))
+async def wad_handler(message: Message):
+    await wad_message(message)
 
 @router.message(Communication.mess)
 async def handle_text(message: Message):
-    def ibl():
-        for bl in ban_list.find({}):
-            if message.chat.id == bl["_id"]:
-                return True
-    if message.web_app_data == None:
-        if ibl() != True:
-            await send_to_admin(message)
+    if message.chat.id != config.admin_group:
+        if ban_list.find_one({"_id": message.chat.id}) == None:
+            text = f"""
+{message.text}
+
+ID: {message.chat.id} | USERNAME: {message.from_user.username} |
+"""
+            if message.content_type == "text":
+                await bot.send_message(chat_id=config.admin_group, text=text)
+            if message.content_type == "photo":
+                await bot.send_photo(chat_id=config.admin_group, photo=message.photo[-1].file_id, caption=text)
+            if message.content_type == "video":
+                await bot.send_video(chat_id=config.admin_group, video=message.video.file_id, caption=text)
+            if message.content_type == "document":
+                await bot.send_document(chat_id=config.admin_group, document=message.document.file_id, caption=text)
         else:
             await message.answer("""
 Ви отривали бан, тому не можете 
 надсилати повідомлення адміністраторам.
 """)
-    else:   
-        await wad_message(message)
+        
 
 @router.message()
 async def handle_text(message: Message):
-    if message.web_app_data == None:
-        if message.reply_to_message is not None and message.chat.id == config.admin_group:
-            await message.copy_to(message.reply_to_message.forward_from.id)
-    else:
-        await wad_message(message)
+    if message.chat.id == config.admin_group:
+        text = message.reply_to_message.text
+        start_index = text.find("ID: ") + len("ID: ")
+        end_index = text.find(" | USERNAME:")
+        id = text[start_index:end_index]
+        await bot.copy_message(id, config.admin_group, message.message_id)
