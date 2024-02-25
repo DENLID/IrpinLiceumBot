@@ -125,7 +125,7 @@ async def ban(message: Message):
 
 @router.message(Command('getmyid'))
 async def getmyid(message: Message):
-    await message.answer(f"Ваш телеграм айді: <code>{message.chat.id}</code>")
+    await message.answer(f"Ваш телеграм айді: <code>{message.chat.id}</code> <code>{message.from_user.id}</code>")
 
 @router.message(Communication.news_state)
 async def news_state_func(message: Message):
@@ -150,6 +150,10 @@ async def wad_message(message):
     update_info_ms("ms.xlsx", data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms"])
 
 @router.message(F.chat.func(lambda message: message.web_app_data != None))
+async def wad_handler(message: Message):
+    await wad_message(message)
+
+@router.message(F.wad)
 async def wad_handler(message: Message):
     await wad_message(message)
 
