@@ -148,7 +148,7 @@ async def wad_message(message):
 Кількість присутніх в класі: {int(data["students_number"])-int(data["ms_number"])}
 Відсутні: {data["ms"]}
 """)
-    update_info_ms("ms.xlsx", data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms"])
+    update_info_ms(data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms"])
 
 @router.message(F.chat.func(lambda message: message.web_app_data != None))
 async def wad_handler(message: Message):

@@ -4,6 +4,8 @@ from openpyxl.styles import Font
 import string, datetime
 from pytz import timezone
 
+path = "/home/container/ms.xlsx"
+
 alphabet_ukr = {
     "А": 1,
     "Б": 2,
@@ -17,7 +19,7 @@ alphabet_ukr = {
     "И": 10
 }
 
-def update_info_ms(path, class_letter, class_number, class_student, present_students, ms_students):
+def update_info_ms(class_letter, class_number, class_student, present_students, ms_students):
     ukraine_time = timezone('Europe/Kiev')
     dt = datetime.datetime.now(ukraine_time)
     dmy = f"{dt.day}.{dt.month}.{dt.year}"
