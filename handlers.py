@@ -10,7 +10,7 @@ import json
 from register import register
 from update_info import update_info_ms
 from states import Communication
-from filters import IsAdmin
+from filters import IsAdmin, IsAdminChat, IsWadMessage
 import keyboards
 import config
 
@@ -124,6 +124,18 @@ async def ban(message: Message):
         else:
             await message.answer("Невірний ID користувача")
 
+@router.message(IsAdminChat())
+async def handle_text(message: Message):
+    print(3)
+    try:
+        text = message.reply_to_message.text
+        start_index = text.find("ID: ") + len("ID: ")
+        end_index = text.find(" | USERNAME:")
+        id = text[start_index:end_index]
+        await bot.copy_message(id, config.admin_group, message.message_id)
+    except:
+        print("Just message in admin chat...")
+
 @router.message(Command('getmyid'))
 async def getmyid(message: Message):
     await message.answer(f"Ваш телеграм айді: <code>{message.chat.id}</code> <code>{message.from_user.id}</code>")
@@ -138,8 +150,10 @@ async def news_state_func(message: Message):
                 except:
                     pass
     
-
-async def wad_message(message):
+    
+@router.message(IsWadMessage())
+async def wad_handler(message: Message):
+    print(1)
     webdata = message.web_app_data.data
     data = json.loads(webdata)
     await message.answer(f"""
@@ -147,24 +161,18 @@ async def wad_message(message):
 Кількість учнів в класі: {data["students_number"]}
 Кількість присутніх в класі: {int(data["students_number"])-int(data["ms_number"])}
 Відсутні: {data["ms"]}
-""")
+""", reply_markup=keyboards.ms_tf_kb)
     update_info_ms(data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms"])
 
-@router.message(F.chat.func(lambda message: message.web_app_data != None))
-async def wad_handler(message: Message):
-    await wad_message(message)
 
-@router.message(F.wad)
-async def wad_handler(message: Message):
-    await wad_message(message)
-
-@router.message(Communication.mess, IsAdmin(True))
+@router.message(Communication.mess)
 async def handle_text(message: Message):
+    print(2)
     if ban_list.find_one({"_id": message.chat.id}) == None:
         text = f"""
 {message.text}
 
-ID: {message.chat.id} | USERNAME: {message.from_user.username} |
+ID: <code>{message.chat.id}</code> | USERNAME: @{message.from_user.username} |
 """
         if message.content_type == "text":
             await bot.send_message(chat_id=config.admin_group, text=text)
@@ -179,15 +187,3 @@ ID: {message.chat.id} | USERNAME: {message.from_user.username} |
 Ви отривали бан, тому не можете 
 надсилати повідомлення адміністраторам.
 """)
-        
-
-@router.message(IsAdmin)
-async def handle_text(message: Message):
-    try:
-        text = message.reply_to_message.text
-        start_index = text.find("ID: ") + len("ID: ")
-        end_index = text.find(" | USERNAME:")
-        id = text[start_index:end_index]
-        await bot.copy_message(id, config.admin_group, message.message_id)
-    except:
-        pass

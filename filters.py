@@ -10,10 +10,13 @@ ban_list = cluster.ILdb.ban_list
 
 
 class IsAdmin(BaseFilter):
-    def __init__(self, is_not: bool=False) -> None:
-        self.is_not = is_not
     async def __call__(self, message: Message) -> bool:
-        if self.is_not == False:
-            return message.chat.id in config.admins
-        else:
-            return message.chat.id not in config.admins
+        return message.chat.id in config.admins
+
+class IsAdminChat(BaseFilter):
+    async def __call__(self, message: Message) -> bool:
+        return message.chat.id == config.admin_group
+
+class IsWadMessage(BaseFilter):
+    async def __call__(self, message: Message) -> bool:
+        return message.web_app_data != None

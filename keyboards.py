@@ -86,3 +86,12 @@ def airalert_kb_func(mark):
         back_menu_button
     ])
     return airalert_kb
+
+ms_tf_kb = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(text='Так, все правильно ✅', callback_data="?")
+    ],
+    [
+        InlineKeyboardButton(text='Ні, не правильно ❌', callback_data="?")
+    ]
+])
