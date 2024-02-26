@@ -94,7 +94,7 @@ async def news(message: Message, state: FSMContext):
     await state.set_state(Communication.news_state)
     await message.answer("Надішліть повідомлення яке отримають всі користувачі")
 
-@router.message(Command('ban'))
+@router.message(Command('ban'), IsAdmin())
 async def ban(message: Message, state: FSMContext):
     if message.chat.id == config.admin_group:
         id = int(message.text.split(maxsplit=1)[1])
@@ -109,7 +109,7 @@ async def ban(message: Message, state: FSMContext):
         else:
             await message.answer("Невірний ID користувача")
         
-@router.message(Command('unban'))
+@router.message(Command('unban'), IsAdmin())
 async def ban(message: Message):
     if message.chat.id == config.admin_group:
         id = int(message.text.split(maxsplit=1)[1])
@@ -158,7 +158,7 @@ async def wad_handler(message: Message):
 async def wad_handler(message: Message):
     await wad_message(message)
 
-@router.message(Communication.mess, not IsAdmin)
+@router.message(Communication.mess, IsAdmin(True))
 async def handle_text(message: Message):
     if ban_list.find_one({"_id": message.chat.id}) == None:
         text = f"""
