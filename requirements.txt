@@ -5,4 +5,3 @@ dnspython
 pytz
 openpyxl
 pyTelegramBotAPI
-pydrive
