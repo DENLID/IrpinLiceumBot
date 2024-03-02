@@ -8,7 +8,6 @@ from pymongo import MongoClient
 import json
 
 from register import register
-from update_info import update_info_ms
 from states import Communication
 from filters import IsAdmin, IsAdminChat, IsWadMessage, IsMsAdmin
 import keyboards
@@ -159,9 +158,8 @@ async def wad_handler(message: Message):
 Кількість учнів в класі: {data["students_number"]}
 Кількість присутніх в класі: {int(data["students_number"])-int(data["ms_number"])}
 Відсутні: {data["ms"]}
-""", reply_markup=keyboards.ms_tf_kb)
-    update_info_ms(data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms"])
-
+""", reply_markup=keyboards.ms_tf_func(data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms"]))
+    
 
 @router.message(Communication.mess)
 async def handle_text(message: Message):

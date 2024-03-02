@@ -6,6 +6,9 @@ from aiogram.types import (
     KeyboardButton
 )
 
+from callbacks import MsCallback
+
+
 back_menu = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="menu")]])
 back_help = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Назад', callback_data="help")]])
 
@@ -87,11 +90,18 @@ def airalert_kb_func(mark):
     ])
     return airalert_kb
 
-ms_tf_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [
-        InlineKeyboardButton(text='Так, все правильно ✅', callback_data="?")
-    ],
-    [
-        InlineKeyboardButton(text='Ні, не правильно ❌', callback_data="?")
-    ]
-])
+def ms_tf_func(class_letter, class_number, class_student, present_students, ms_students):
+    ms_tf_kb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text='Так, все правильно ✅', callback_data=MsCallback(action="ms_accept", 
+                                                                                        class_letter=class_letter, 
+                                                                                        class_number=class_number,
+                                                                                        class_student=class_student,
+                                                                                        present_students=present_students,
+                                                                                        ms_students=ms_students
+                                                                                        ))
+        ],
+        [
+            InlineKeyboardButton(text='Ні, не правильно ❌', callback_data="ms_decline")
+        ]
+    ])
