@@ -16,6 +16,10 @@ class IsAdmin(BaseFilter):
 class IsAdminChat(BaseFilter):
     async def __call__(self, message: Message) -> bool:
         return message.chat.id == config.admin_group
+    
+class IsMsAdmin(BaseFilter):
+    async def __call__(self, message: Message) -> bool:
+        return message.chat.id in config.msw_admins
 
 class IsWadMessage(BaseFilter):
     async def __call__(self, message: Message) -> bool:

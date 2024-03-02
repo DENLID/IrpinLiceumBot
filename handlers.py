@@ -10,7 +10,7 @@ import json
 from register import register
 from update_info import update_info_ms
 from states import Communication
-from filters import IsAdmin, IsAdminChat, IsWadMessage
+from filters import IsAdmin, IsAdminChat, IsWadMessage, IsMsAdmin
 import keyboards
 import config
 
@@ -87,7 +87,7 @@ reply_markup=keyboards.ms_kb)
 
 @router.message(Command('ms_xlsx'))
 async def ms_xlsx(message: Message):
-    await message.answer_document(document=FSInputFile("ms.xlsx"), caption="Список відсутніх учнів в школі")
+    await message.answer_document(document=FSInputFile("/home/container/ms.xlsx"), caption="Список відсутніх учнів в школі")
     
 @router.message(Command('news'))
 async def news(message: Message, state: FSMContext):
@@ -126,7 +126,6 @@ async def ban(message: Message):
 
 @router.message(IsAdminChat())
 async def handle_text(message: Message):
-    print(3)
     try:
         text = message.reply_to_message.text
         start_index = text.find("ID: ") + len("ID: ")
@@ -151,9 +150,8 @@ async def news_state_func(message: Message):
                     pass
     
     
-@router.message(IsWadMessage())
+@router.message(IsWadMessage(), IsMsAdmin())
 async def wad_handler(message: Message):
-    print(1)
     webdata = message.web_app_data.data
     data = json.loads(webdata)
     await message.answer(f"""
@@ -167,7 +165,6 @@ async def wad_handler(message: Message):
 
 @router.message(Communication.mess)
 async def handle_text(message: Message):
-    print(2)
     if ban_list.find_one({"_id": message.chat.id}) == None:
         text = f"""
 {message.text}
