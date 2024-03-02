@@ -6,7 +6,7 @@ from aiogram.types import (
     KeyboardButton
 )
 
-from callbacks import MsCallback
+from mscallback import MsCallback
 
 
 back_menu = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="menu")]])
@@ -65,7 +65,7 @@ help_kb_menu = InlineKeyboardMarkup(inline_keyboard=[
 
 ms_kb = ReplyKeyboardMarkup(keyboard=[
     [
-        KeyboardButton(text="Form", web_app=WebAppInfo(url="https://denlid.github.io/IrpinLiceumBot/"))
+        KeyboardButton(text="Form", web_app=WebAppInfo(url="https://denlid.github.io/IrpinLiceumBotWEBCITE/"))
     ]
 ])
 
@@ -90,7 +90,7 @@ def airalert_kb_func(mark):
     ])
     return airalert_kb
 
-def ms_tf_func(class_letter, class_number, class_student, present_students, ms_students):
+def ms_tf_func(class_letter, class_number, class_student, present_students, ms_number_hv, ms_students):
     ms_tf_kb = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text='Так, все правильно ✅', callback_data=MsCallback(action="ms_accept", 
@@ -98,10 +98,12 @@ def ms_tf_func(class_letter, class_number, class_student, present_students, ms_s
                                                                                         class_number=class_number,
                                                                                         class_student=class_student,
                                                                                         present_students=present_students,
+                                                                                        ms_number_hv=ms_number_hv,
                                                                                         ms_students=ms_students
-                                                                                        ))
+                                                                                        ).pack())
         ],
         [
             InlineKeyboardButton(text='Ні, не правильно ❌', callback_data="ms_decline")
         ]
     ])
+    return ms_tf_kb

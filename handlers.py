@@ -77,11 +77,9 @@ async def help_message(message, ftype):
 """, reply_markup = keyboards.help_kb_menu)
     
     
-@router.message(Command('ms'))
+@router.message(Command('ms'), IsMsAdmin())
 async def ms(message: Message):
-    for username in config.msw_admins:
-        if username == message.from_user.username:
-            await message.answer("Натисніть на кнопку Form, щоб перейти на форму заповнення відсутніх учнів в вашому класі.", 
+    await message.answer("Натисніть на кнопку Form, щоб перейти на форму заповнення відсутніх учнів в вашому класі.", 
 reply_markup=keyboards.ms_kb)
 
 @router.message(Command('ms_xlsx'))
@@ -157,8 +155,10 @@ async def wad_handler(message: Message):
 Клас: {data["class_number"]} - {data["class_letter"]}
 Кількість учнів в класі: {data["students_number"]}
 Кількість присутніх в класі: {int(data["students_number"])-int(data["ms_number"])}
+Кількість відсутніх в класі: {data["ms_number"]}
+Кількість хворих із відсутніх: {data["ms_number_hv"]}
 Відсутні: {data["ms"]}
-""", reply_markup=keyboards.ms_tf_func(data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms"]))
+""", reply_markup=keyboards.ms_tf_func(data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms_number_hv"], data["ms"]))
     
 
 @router.message(Communication.mess)

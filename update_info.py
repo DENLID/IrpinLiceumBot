@@ -19,7 +19,7 @@ alphabet_ukr = {
     "И": 10
 }
 
-def update_info_ms(class_letter, class_number, class_student, present_students, ms_students):
+def update_info_ms(class_letter, class_number, class_student, present_students, ms_number_hv, ms_students):
     ukraine_time = timezone('Europe/Kiev')
     dt = datetime.datetime.now(ukraine_time)
     dmy = f"{dt.day}.{dt.month}.{dt.year}"
@@ -35,7 +35,8 @@ def update_info_ms(class_letter, class_number, class_student, present_students, 
         xl[f"A1"] = "Клас"
         xl[f"B1"] = "Кількість учнів в класі"
         xl[f"C1"] = "Кількість присутніх в класі"
-        xl[f"D1"] = "Відсутні"   
+        xl[f"D1"] = "Кількість хворих відсутніх"
+        xl[f"E1"] = "Відсутні"
 
         for l in ["A","B","C"]:
             xl[f"{l}1"].font = xl[f"{l}1"].font.copy(bold=True)
@@ -48,7 +49,8 @@ def update_info_ms(class_letter, class_number, class_student, present_students, 
     xl[f"A{number}"] = f"{class_number} - {class_letter}"
     xl[f"B{number}"] = class_student
     xl[f"C{number}"] = present_students
-    xl[f"D{number}"] = ms_students
+    xl[f"D{number}"] = ms_number_hv
+    xl[f"E{number}"] = ms_students
         
     for col in xl.columns:
         max_length = 0

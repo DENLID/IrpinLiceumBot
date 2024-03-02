@@ -1,13 +1,13 @@
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
-from aiogram.filters.callback_data import CallbackData
 from pymongo import MongoClient
 
 from register import register
 from handlers import send_menu, help_message
 from states import Communication
 from update_info import update_info_ms
+from mscallback import MsCallback
 import keyboards
 import config
 
@@ -16,14 +16,6 @@ router = Router()
 cluster = MongoClient(config.mongo_api)
 users = cluster.ILdb.users
 
-
-class MsCallback(CallbackData, prefix="ms"):
-    action: str
-    class_letter: str
-    class_number: int
-    class_student: int
-    present_students: int
-    ms_students: str
 
 @router.callback_query()
 async def query(call: CallbackQuery, state: FSMContext):
@@ -96,4 +88,4 @@ reply_markup=keyboards.ms_kb)
 async def ms_accept_callback(call: CallbackQuery, callback_data: MsCallback):
     update_info_ms(callback_data.class_letter, callback_data.class_number, 
                    callback_data.class_student, callback_data.present_students, 
-                   callback_data.ms_students)
+                   callback_data.ms_number_hv, callback_data.ms_students)
