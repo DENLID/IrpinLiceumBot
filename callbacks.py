@@ -17,6 +17,13 @@ cluster = MongoClient(config.mongo_api)
 users = cluster.ILdb.users
 
 
+@router.callback_query(MsCallback.filter(F.action == "ms_accept"))
+async def ms_accept_callback(call: CallbackQuery, callback_data: MsCallback):
+    update_info_ms(callback_data.class_letter, callback_data.class_number, 
+                   callback_data.class_student, callback_data.present_students, 
+                   callback_data.ms_number_hv, callback_data.ms_students)
+    await call.message.edit_text("Список відсутніх учнів успішно оновлений ✅")
+
 @router.callback_query()
 async def query(call: CallbackQuery, state: FSMContext):
     if call.data == "menu":
@@ -77,15 +84,9 @@ async def query(call: CallbackQuery, state: FSMContext):
 {l[user["airalert"]]}""", reply_markup=keyboards.airalert_kb_func(user["airalert"]))
 
     if call.data == "ms_decline":
-        await call.message.answer("Натисніть на кнопку Form, щоб перейти на форму заповнення відсутніх учнів в вашому класі.", 
+        await call.message.edit_text("Натисніть на кнопку Form, щоб перейти на форму заповнення відсутніх учнів в вашому класі.", 
 reply_markup=keyboards.ms_kb)
 
     if call.data == "comming":
         await call.answer("В розробці", show_alert=True)
 
-
-@router.callback_query(MsCallback.filter(F.action == "ms_accept"))
-async def ms_accept_callback(call: CallbackQuery, callback_data: MsCallback):
-    update_info_ms(callback_data.class_letter, callback_data.class_number, 
-                   callback_data.class_student, callback_data.present_students, 
-                   callback_data.ms_number_hv, callback_data.ms_students)

@@ -3,8 +3,8 @@ from openpyxl.styles import Alignment
 from openpyxl.styles import Font
 import string, datetime
 from pytz import timezone
+from config import path_ms as path
 
-path = "/home/container/ms.xlsx"
 
 alphabet_ukr = {
     "А": 1,

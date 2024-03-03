@@ -13,7 +13,7 @@ from filters import IsAdmin, IsAdminChat, IsWadMessage, IsMsAdmin
 import keyboards
 import config
 
-bot = Bot(config.bot_token, parse_mode="HTML")
+
 router = Router()
 
 cluster = MongoClient(config.mongo_api)
@@ -84,7 +84,7 @@ reply_markup=keyboards.ms_kb)
 
 @router.message(Command('ms_xlsx'))
 async def ms_xlsx(message: Message):
-    await message.answer_document(document=FSInputFile("/home/container/ms.xlsx"), caption="Список відсутніх учнів в школі")
+    await message.answer_document(document=FSInputFile(config.path_ms), caption="Список відсутніх учнів в школі")
     
 @router.message(Command('news'))
 async def news(message: Message, state: FSMContext):
@@ -122,7 +122,7 @@ async def ban(message: Message):
             await message.answer("Невірний ID користувача")
 
 @router.message(IsAdminChat())
-async def handle_text(message: Message):
+async def handle_text(message: Message, bot: Bot):
     try:
         text = message.reply_to_message.text
         start_index = text.find("ID: ") + len("ID: ")
@@ -137,7 +137,7 @@ async def getmyid(message: Message):
     await message.answer(f"Ваш телеграм айді: <code>{message.chat.id}</code> <code>{message.from_user.id}</code>")
 
 @router.message(Communication.news_state)
-async def news_state_func(message: Message):
+async def news_state_func(message: Message, bot: Bot):
     for username in config.msw_admins:
         if username == message.from_user.username:
             for u in users.find({}):
@@ -162,7 +162,7 @@ async def wad_handler(message: Message):
     
 
 @router.message(Communication.mess)
-async def handle_text(message: Message):
+async def handle_text(message: Message, bot: Bot):
     if ban_list.find_one({"_id": message.chat.id}) == None:
         text = f"""
 {message.text}

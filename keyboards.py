@@ -93,7 +93,7 @@ def airalert_kb_func(mark):
 def ms_tf_func(class_letter, class_number, class_student, present_students, ms_number_hv, ms_students):
     ms_tf_kb = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text='Так, все правильно ✅', callback_data=MsCallback(action="ms_accept", 
+            InlineKeyboardButton(text='Так, все правильно ✅', callback_data=MsCallback(action="ms_accept",
                                                                                         class_letter=class_letter, 
                                                                                         class_number=class_number,
                                                                                         class_student=class_student,
