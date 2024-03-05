@@ -107,3 +107,12 @@ def ms_tf_func(class_letter, class_number, class_student, present_students, ms_n
         ]
     ])
     return ms_tf_kb
+
+comm_kb = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(
+            text="💬 Зв'язок з адмінами 💬", 
+            callback_data="comm"
+        )
+    ],
+])

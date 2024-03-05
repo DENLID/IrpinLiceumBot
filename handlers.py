@@ -1,4 +1,4 @@
-from aiogram.filters import Command, CommandStart
+from aiogram.filters import Command, CommandStart, CommandObject
 from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, Bot, F
@@ -9,7 +9,7 @@ import json
 
 from register import register
 from states import Communication
-from filters import IsAdmin, IsAdminChat, IsWadMessage, IsMsAdmin
+from filters import IsAdminChat, IsWadMessage, IsMsAdmin
 import keyboards
 import config
 
@@ -38,7 +38,7 @@ async def airalert_handler(message: Message):
     
 
 @router.message(CommandStart())
-async def start(message: Message):
+async def start(message: Message) -> None:
     print(message.chat.id)
     await message.answer(text="""
 Привіт, я телеграм бот
@@ -86,12 +86,16 @@ reply_markup=keyboards.ms_kb)
 async def ms_xlsx(message: Message):
     await message.answer_document(document=FSInputFile(config.path_ms), caption="Список відсутніх учнів в школі")
     
-@router.message(Command('news'))
-async def news(message: Message, state: FSMContext):
-    await state.set_state(Communication.news_state)
-    await message.answer("Надішліть повідомлення яке отримають всі користувачі")
+@router.message(Command('news',), IsAdminChat())
+async def news(message: Message, state: FSMContext, bot: Bot, command: CommandObject):
+    text = command.args
+    for u in users.find({}):
+        try:
+            await bot.send_message(chat_id=u["_id"], text=text)
+        except:
+            pass
 
-@router.message(Command('ban'), IsAdmin())
+@router.message(Command('ban'), IsAdminChat())
 async def ban(message: Message, state: FSMContext):
     if message.chat.id == config.admin_group:
         id = int(message.text.split(maxsplit=1)[1])
@@ -106,7 +110,7 @@ async def ban(message: Message, state: FSMContext):
         else:
             await message.answer("Невірний ID користувача")
         
-@router.message(Command('unban'), IsAdmin())
+@router.message(Command('unban'), IsAdminChat())
 async def ban(message: Message):
     if message.chat.id == config.admin_group:
         id = int(message.text.split(maxsplit=1)[1])
@@ -121,6 +125,49 @@ async def ban(message: Message):
         else:
             await message.answer("Невірний ID користувача")
 
+@router.message(Command('uchcom'))
+async def uchcom(message: Message, bot: Bot):
+    await bot.send_message(chat_id=None)
+
+@router.message(Command('add_tag'), IsAdminChat())
+async def add_tag(message: Message, command: CommandObject):
+    args = command.args.split()
+    chat_id = int(args[0])
+    tag = args[1]
+
+    if users.find_one({"_id": chat_id}) != None:
+        users.update_one({"_id": chat_id}, {"$push": {"tags": tag}})
+        await message.answer(f"Користувачу з ID: <code>{chat_id}</code> успішно добавлений тег <code>{tag}</code> ✅")
+    else:
+        await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
+
+@router.message(Command('delete_tag'), IsAdminChat())
+async def delete_tag(message: Message, command: CommandObject):
+    args = command.args.split()
+    chat_id = int(args[0])
+    tag = args[1]
+
+    if users.find_one({"_id": chat_id}) != None:
+        users.update_one({"_id": chat_id}, {"$pull": {"tags": tag}})
+        await message.answer(f"Користувачу з ID: <code>{chat_id}</code> успішно забрно тег <code>{tag}</code> ✅")
+    else:
+        await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
+
+@router.message(Command('get_info'), IsAdminChat())
+async def delete_tag(message: Message, command: CommandObject):
+    args = command.args.split()
+    chat_id = int(args[0])
+
+    data = users.find_one({"_id": chat_id})
+
+    if data != None:
+        await message.answer(f"""
+Інформація про користувача:
+ID: {data["tags"]}
+""")
+    else:
+        await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
+
 @router.message(IsAdminChat())
 async def handle_text(message: Message, bot: Bot):
     try:
@@ -134,24 +181,17 @@ async def handle_text(message: Message, bot: Bot):
 
 @router.message(Command('getmyid'))
 async def getmyid(message: Message):
-    await message.answer(f"Ваш телеграм айді: <code>{message.chat.id}</code> <code>{message.from_user.id}</code>")
+    await message.answer(f"""
+Ваш телеграм айді: <code>{message.from_user.id}</code>
+Ваш телеграм чат айді: <code>{message.chat.id}</code>""")  
 
-@router.message(Communication.news_state)
-async def news_state_func(message: Message, bot: Bot):
-    for username in config.msw_admins:
-        if username == message.from_user.username:
-            for u in users.find({}):
-                try:
-                    await bot.send_message(chat_id=u["_id"], text=message.text)
-                except:
-                    pass
-    
-    
+
 @router.message(IsWadMessage(), IsMsAdmin())
 async def wad_handler(message: Message):
     webdata = message.web_app_data.data
     data = json.loads(webdata)
-    await message.answer(f"""
+    if [f'{data["class_number"]}-{data["class_letter"]}'] in users.find_one({"_id": int(message.chat.id)})["tags"]:
+        await message.answer(f"""
 Клас: {data["class_number"]} - {data["class_letter"]}
 Кількість учнів в класі: {data["students_number"]}
 Кількість присутніх в класі: {int(data["students_number"])-int(data["ms_number"])}
@@ -159,7 +199,8 @@ async def wad_handler(message: Message):
 Кількість хворих із відсутніх: {data["ms_number_hv"]}
 Відсутні: {data["ms"]}
 """, reply_markup=keyboards.ms_tf_func(data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms_number_hv"], data["ms"]))
-    
+    else:
+        await message.answer(f'Вибачте але ви не можете редагувати відсутніх в класі {data["class_number"]} - {data["class_letter"]}', reply_markup=keyboards.comm_kb)
 
 @router.message(Communication.mess)
 async def handle_text(message: Message, bot: Bot):
