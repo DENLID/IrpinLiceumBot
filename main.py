@@ -2,17 +2,21 @@ import asyncio, logging
 from aiogram import Bot, Dispatcher
 from threading import Thread
 
-import handlers
-import callbacks
+from handlers import user_commands, air_alert
+from callbacks import callbacks
 from air_alert import air_alert
+from middlewares.check_reg import CheckRegistration
 import config
 
 async def main():
     bot = Bot(config.bot_token, parse_mode="HTML")
     dp = Dispatcher()
 
+    dp.message.middleware(CheckRegistration())
+
     dp.include_routers(
-        handlers.router,
+        user_commands.router,
+        air_alert.router,
         callbacks.router
     )
 

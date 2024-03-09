@@ -7,13 +7,14 @@ import config
 cluster = MongoClient(config.mongo_api)
 users = cluster.ILdb.users
 
-class Register(BaseMiddleware):
+class CheckRegistration(BaseMiddleware):
     async def __call__(
         self, 
         handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]], 
         event: TelegramObject, 
         data: Dict[str, Any]
     ) -> Any:
+        print("gg")
         id = int(event.chat.id)
         
         y = {
@@ -27,3 +28,4 @@ class Register(BaseMiddleware):
         
         if is_exist == 0:
             users.insert_one(y)
+        return await handler(event, data)
