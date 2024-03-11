@@ -1,19 +1,17 @@
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
-from pymongo import MongoClient
+from motor.core import AgnosticDatabase as MDB
 
 from handlers.user_commands import send_menu, help_message
 from utils.states import Communication
-from update_info import update_info_ms
-from mscallback import MsCallback
-import keyboerds.keyboards as keyboards
+from update_info.update_info import update_info_ms
+from keyboards.keyboards import MsCallback
+import keyboards.keyboards as keyboards
 import config
 
-router = Router()
 
-cluster = MongoClient(config.mongo_api)
-users = cluster.ILdb.users
+router = Router()
 
 
 @router.callback_query(MsCallback.filter(F.action == "ms_accept"))
@@ -24,7 +22,7 @@ async def ms_accept_callback(call: CallbackQuery, callback_data: MsCallback):
     await call.message.edit_text("Список відсутніх учнів успішно оновлений ✅")
 
 @router.callback_query()
-async def query(call: CallbackQuery, state: FSMContext):
+async def query(call: CallbackQuery, state: FSMContext, db: MDB):
     if call.data == "menu":
         await send_menu(call, "call")
     if call.data == "comm":
@@ -66,16 +64,17 @@ async def query(call: CallbackQuery, state: FSMContext):
     }
 
     if call.data == "air_alert":
-        user = users.find_one({"_id": call.message.chat.id})
+        user = await db.users.find_one({"_id": call.message.chat.id})
+        print(user["airalert"])
         await call.message.edit_text(text=f"""
 Виберіть коли ви хочете отримувати 
 повідомлення повітряної тривоги
 /відбію. Наданий момент ви 
 {l[user["airalert"]]}""", reply_markup=keyboards.airalert_kb_func(user["airalert"]))
-    for i in l.keys:
+    for i in ["never", "st", "always"]:
         if call.data == f"airalert_{i}":
-            users.update_one({"_id": call.message.chat.id}, {"$set": {"airalert": i}})
-            user = users.find_one({"_id": call.message.chat.id})
+            await db.users.update_one({"_id": call.message.chat.id}, {"$set": {"airalert": i}})
+            user = await db.users.find_one({"_id": call.message.chat.id})
             await call.message.edit_text(text=f"""
 Виберіть коли ви хочете отримувати 
 повідомлення повітряної тривоги

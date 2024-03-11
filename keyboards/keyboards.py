@@ -6,7 +6,7 @@ from aiogram.types import (
     KeyboardButton
 )
 
-from mscallback import MsCallback
+from aiogram.filters.callback_data import CallbackData
 
 
 back_menu = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="menu")]])
@@ -89,6 +89,18 @@ def airalert_kb_func(mark):
         back_menu_button
     ])
     return airalert_kb
+
+
+class MsCallback(CallbackData, prefix="ms"):
+    action: str
+    class_letter: str
+    class_number: int
+    class_student: int
+    present_students: int
+    ms_number_hv: int
+    ms_students: str
+
+
 
 def ms_tf_func(class_letter, class_number, class_student, present_students, ms_number_hv, ms_students):
     ms_tf_kb = InlineKeyboardMarkup(inline_keyboard=[
