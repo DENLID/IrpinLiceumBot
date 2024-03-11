@@ -4,7 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from motor.core import AgnosticDatabase as MDB
 from threading import Thread
 
-from handlers import user_commands, air_alert
+from handlers import user_commands, air_alert, communication, webappdata
 from callbacks import callbacks
 from air_alert.air_alert import pull_air_alert
 from middlewares.anti_flood import AntiFloodMiddleware
@@ -22,6 +22,8 @@ async def main():
     dp.include_routers(
         user_commands.router,
         air_alert.router,
+        communication.router,
+        webappdata.router,
         callbacks.router
     )
 
