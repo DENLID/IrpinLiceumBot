@@ -7,7 +7,7 @@ from threading import Thread
 from handlers import user_commands, air_alert
 from callbacks import callbacks
 from air_alert.air_alert import pull_air_alert
-from middlewares.anti_flood import CheckRegistration
+from middlewares.anti_flood import AntiFloodMiddleware
 import config
 
 async def main():
@@ -17,7 +17,7 @@ async def main():
     cluster = AsyncIOMotorClient(config.mongo_api)
     db = cluster.ILdb
 
-    #dp.message.middleware(CheckRegistration())
+    dp.message.middleware(AntiFloodMiddleware())
 
     dp.include_routers(
         user_commands.router,
