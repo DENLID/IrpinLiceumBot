@@ -1,1 +1,18 @@
 # IrpinLiceumBot
+
+Open-soure бота ірпінського ліцея №2
+
+<b>Силка на бота:</b> https://t.me/irpin_liceum_bot
+
+<hr>
+
+Всі команди бота для користувачів:
+<ul>
+  <li>/start - Перезапуск бота</li>
+  <li>/menu - Меню</li>
+  <li>/help - Допомога</li>
+</ul>
+
+<hr>
+
+<b>Хочеш допомогти в розробці бота? Пиши сюди: https://t.me/denlid_uwu</b>
