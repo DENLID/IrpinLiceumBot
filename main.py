@@ -1,5 +1,6 @@
 import asyncio, logging
 from aiogram import Bot, Dispatcher
+from aiogram.enums import ParseMode
 from motor.motor_asyncio import AsyncIOMotorClient
 from motor.core import AgnosticDatabase as MDB
 from threading import Thread
@@ -11,7 +12,7 @@ from middlewares.anti_flood import AntiFloodMiddleware
 import config
 
 async def main():
-    bot = Bot(config.bot_token, parse_mode="HTML")
+    bot = Bot(config.bot_token, parse_mode=ParseMode.HTML)
     dp = Dispatcher()
 
     cluster = AsyncIOMotorClient(config.mongo_api)

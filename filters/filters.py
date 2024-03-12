@@ -9,6 +9,11 @@ class IsAdminChat(BaseFilter):
     async def __call__(self, message: Message) -> bool:
         return message.chat.id == config.admin_group
     
+class IsAdmin(BaseFilter):
+    async def __call__(self, message: Message, db: MDB) -> bool:
+        user = await db.users.find_one({"_id": message.chat.id})
+        return "admin" in user["tags"]
+
 class IsMsAdmin(BaseFilter):
     async def __call__(self, message: Message, db: MDB) -> bool:
         user = await db.users.find_one({"_id": message.chat.id})
