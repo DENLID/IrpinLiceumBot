@@ -17,10 +17,6 @@ async def wad_handler(message: Message, db: MDB):
     webdata = message.web_app_data.data
     data = json.loads(webdata)
 
-    print((await db.users.find_one({"_id": int(message.chat.id)}))["tags"])
-    print(f'{data["class_number"]}-{data["class_letter"]}')
-    print(f'{data["class_number"]}-{data["class_letter"]}' in (await db.users.find_one({"_id": int(message.chat.id)}))["tags"])
-
     if f'{data["class_number"]}-{data["class_letter"]}' in (await db.users.find_one({"_id": int(message.chat.id)}))["tags"]:
         await message.answer(f"""
 Клас: {data["class_number"]} - {data["class_letter"]}

@@ -15,6 +15,8 @@ router = Router()
 async def handle_text(message: Message, bot: Bot):
     try:
         text = message.reply_to_message.text
+        if text == None:
+            text = message.reply_to_message.caption
         start_index = text.find("ID: ") + len("ID: ")
         end_index = text.find(" | USERNAME:")
         id = text[start_index:end_index]

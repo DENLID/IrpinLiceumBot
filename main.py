@@ -22,8 +22,8 @@ async def main():
     dp.include_routers(
         user_commands.router,
         air_alert.router,
-        communication.router,
         webappdata.router,
+        communication.router,
         callbacks.router
     )
 
