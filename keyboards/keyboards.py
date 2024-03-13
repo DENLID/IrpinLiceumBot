@@ -44,6 +44,16 @@ menu_kb = InlineKeyboardMarkup(inline_keyboard=[
     ]
 ])
 
+comm_kb = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(
+            text="Я не отримав відповіді",
+            callback_data="comm"
+        )
+    ],
+    back_menu_button
+])
+
 help_kb_command = InlineKeyboardMarkup(inline_keyboard=[
     [
         InlineKeyboardButton(text='Всі команди бота', callback_data="help_command")
@@ -58,7 +68,7 @@ help_kb_menu = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(text='Всі команди бота', callback_data="help_command")
     ],
     [
-        InlineKeyboardButton(text='Чому на моє повідомлення нічого не відповіли?', callback_data="help_zvazok")
+        InlineKeyboardButton(text='Мені не відповідають адміни', callback_data="help_zvazok")
     ],
     back_menu_button
 ])
@@ -106,13 +116,9 @@ def ms_tf_func(class_letter, class_number, class_student, present_students, ms_n
     ms_tf_kb = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text='Так, все правильно ✅', callback_data=MsCallback(action="ms_accept",
-                                                                                        class_letter=class_letter, 
-                                                                                        class_number=class_number,
-                                                                                        class_student=class_student,
-                                                                                        present_students=present_students,
-                                                                                        ms_number_hv=ms_number_hv,
-                                                                                        ms_students=ms_students
-                                                                                        ).pack())
+                                                                                        class_letter=class_letter, class_number=class_number,
+                                                                                        class_student=class_student, present_students=present_students,
+                                                                                        ms_number_hv=ms_number_hv, ms_students=ms_students).pack())
         ],
         [
             InlineKeyboardButton(text='Ні, не правильно ❌', callback_data="ms_decline")
@@ -120,7 +126,7 @@ def ms_tf_func(class_letter, class_number, class_student, present_students, ms_n
     ])
     return ms_tf_kb
 
-comm_kb = InlineKeyboardMarkup(inline_keyboard=[
+to_comm_kb = InlineKeyboardMarkup(inline_keyboard=[
     [
         InlineKeyboardButton(
             text="💬 Зв'язок з адмінами 💬", 

@@ -52,14 +52,11 @@ async def help(message: Message):
     await help_message(message, "command")
 
 async def help_message(message, ftype):
+    text = "Виберіть запитання яке вас цікавить"
     if ftype == "command":
-        await message.answer("""
-Виберіть запитання яке вас цікавить
-""", reply_markup = keyboards.help_kb_command)
+        await message.answer(text, reply_markup = keyboards.help_kb_command)
     elif ftype == "call":
-        await message.message.edit_text("""
-Виберіть запитання яке вас цікавить
-""", reply_markup = keyboards.help_kb_menu)
+        await message.message.edit_text(text, reply_markup = keyboards.help_kb_menu)
     
     
 @router.message(Command('ms'), IsMsAdmin())
