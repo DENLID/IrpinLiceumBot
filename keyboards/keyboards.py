@@ -48,7 +48,7 @@ comm_kb = InlineKeyboardMarkup(inline_keyboard=[
     [
         InlineKeyboardButton(
             text="Я не отримав відповіді",
-            callback_data="comm"
+            callback_data="help_zvazok"
         )
     ],
     back_menu_button
