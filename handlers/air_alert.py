@@ -19,10 +19,10 @@ async def airalert_handler(message: Message, db: MDB):
         weekday = dt.weekday()
         
         if weekday != 5 and weekday != 6 and datetime(dt.year, dt.month, dt.day, 8, 0, tzinfo=ukraine_time) <= dt <= datetime(dt.year, dt.month, dt.day, 18, 40, tzinfo=ukraine_time):
-            async for u in await db.users.find({ "$or": [{"airalert": "st"}, {"airalert": "always"}]}):
+            async for u in db.users.find({ "$or": [{"airalert": "st"}, {"airalert": "always"}]}):
                 print("send air alert to channel")
                 await message.copy_to(u["_id"]) # Надсилання користувачам
             await message.copy_to(config.channel_to) # Надсилання на канал
         else:
-            async for u in await db.users.find({"airalert": "always"}):
+            async for u in db.users.find({"airalert": "always"}):
                 await message.copy_to(u["_id"])
