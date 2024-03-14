@@ -32,7 +32,7 @@ async def query(call: CallbackQuery, state: FSMContext, db: MDB):
 або пропозицію. Якщо вам
 протягом 2 годин нічого не
 відповіли, то натисніть
-кнопку нижче 👇👇👇""", reply_markup=keyboards.back_menu)
+кнопку нижче 👇👇👇""", reply_markup=keyboards.comm_kb)
             
     if call.data == "help":
         await help_message(call, "call")  
