@@ -44,6 +44,5 @@ ID: <code>{message.chat.id}</code> | USERNAME: @{message.from_user.username} |
             await bot.send_document(chat_id=config.admin_group, document=message.document.file_id, caption=text)
     else:
         await message.answer("""
-Ви отривали бан, тому не можете 
-надсилати повідомлення адміністраторам.
+Ви отривали бан, тому не можете надсилати повідомлення адміністраторам.
 """)

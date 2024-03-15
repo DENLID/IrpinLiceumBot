@@ -9,8 +9,15 @@ from aiogram.types import (
 from aiogram.filters.callback_data import CallbackData
 
 
+def check_mark(str, data):
+    if str == data:
+        return "✅"
+    else:
+        return ""
+
+
 back_menu = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="menu")]])
-back_help = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Назад', callback_data="help")]])
+back_help = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="help")]])
 
 back_menu_button = [InlineKeyboardButton(text='🔙 Назад', callback_data="menu")]
 
@@ -33,7 +40,7 @@ menu_kb = InlineKeyboardMarkup(inline_keyboard=[
     [
         InlineKeyboardButton(
             text="🚨 Сповіщення повітряної тривоги 🚨", 
-            callback_data="air_alert"
+            callback_data="airalert"
         )
     ],
     [
@@ -48,7 +55,7 @@ comm_kb = InlineKeyboardMarkup(inline_keyboard=[
     [
         InlineKeyboardButton(
             text="Я не отримав відповіді",
-            callback_data="help_zvazok"
+            callback_data="comm_help"
         )
     ],
     back_menu_button
@@ -79,22 +86,16 @@ ms_kb = ReplyKeyboardMarkup(keyboard=[
     ]
 ])
 
-def airalert_kb_func(mark):
-    def check_mark(b):
-        if b == mark:
-            return "✅"
-        else:
-            return ""
-        
+def airalert_kb_func(data):
     airalert_kb = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text=f"Ніколи {check_mark('never')}", callback_data="airalert_never")
+            InlineKeyboardButton(text=f"Ніколи {check_mark('never', data)}", callback_data="airalert_never")
         ],
         [
-            InlineKeyboardButton(text=f"В шкільний час {check_mark('st')}", callback_data="airalert_st")
+            InlineKeyboardButton(text=f"В шкільний час {check_mark('st', data)}", callback_data="airalert_st")
         ],
         [
-            InlineKeyboardButton(text=f"Завжди {check_mark('always')}", callback_data="airalert_always")
+            InlineKeyboardButton(text=f"Завжди {check_mark('always', data)}", callback_data="airalert_always")
         ],
         back_menu_button
     ])
@@ -112,7 +113,7 @@ class MsCallback(CallbackData, prefix="ms"):
 
 
 
-def ms_tf_func(class_letter, class_number, class_student, present_students, ms_number_hv, ms_students):
+def ms_confirm(class_letter, class_number, class_student, present_students, ms_number_hv, ms_students):
     ms_tf_kb = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text='Так, все правильно ✅', callback_data=MsCallback(action="ms_accept",
