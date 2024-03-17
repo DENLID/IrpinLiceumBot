@@ -1,5 +1,6 @@
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
+from aiogram.filters import or_f
 from aiogram.fsm.context import FSMContext
 from motor.core import AgnosticDatabase as MDB
 
@@ -14,9 +15,9 @@ import config
 router = Router()
 
 airalert_list = {
-        "never": "<b>не</b> отримуєте повідомлення", 
-        "st": "отримуєте повідомлення <b>в шкільний час</b>", 
-        "always": "<b>завжди</b> отримуєте повідомлення"
+    "never": "<b>не</b> отримуєте повідомлення", 
+    "st": "отримуєте повідомлення <b>в шкільний час</b>", 
+    "always": "<b>завжди</b> отримуєте повідомлення"
 }
 
 @router.callback_query(MsCallback.filter(F.action == "ms_accept"))
@@ -26,8 +27,7 @@ async def ms_accept_callback(call: CallbackQuery, callback_data: MsCallback):
                    callback_data.ms_number_hv, callback_data.ms_students)
     await call.message.edit_text("Список відсутніх учнів успішно оновлений ✅")
 
-@router.callback_query(MsCallback.filter(F.data == "help_zvazok"))
-@router.callback_query(MsCallback.filter(F.data == "comm_help"))
+@router.callback_query(or_f(MsCallback.filter(F.data == "help_zvazok"), MsCallback.filter(F.data == "comm_help")))
 async def ms_accept_callback(call: CallbackQuery, callback_data: MsCallback):
     text="""
 <b><i>Чому мені не відповіли адміни?</i></b> 
@@ -38,6 +38,7 @@ async def ms_accept_callback(call: CallbackQuery, callback_data: MsCallback):
                                      
 <b>Якщо це вам не допомогло, то напишіть сюди: @denlid_uwu</b>
 """
+    print("gggggggggggg")
     if call.data == "help_zvazok":
         await call.message.edit_text(text=text, reply_markup=keyboards.back_help)
     if call.data == "comm_help":
@@ -50,7 +51,7 @@ async def query(call: CallbackQuery, state: FSMContext, db: MDB):
     if call.data == "comm":
         await state.set_state(Communication.mess)
         await call.message.edit_text(text="""
-Надішліть ваше запитання або пропозицію. Якщо вам протягом 2 годин нічого не відповіли, то натиснітькнопку <b>Я не отримав відповіді</b>
+Надішліть ваше запитання або пропозицію. Якщо вам протягом 2 годин нічого не відповіли, то натисніть кнопку 👉 <b>Я не отримав відповіді</b>
 """, reply_markup=keyboards.comm_kb)
             
     if call.data == "help":
@@ -70,7 +71,6 @@ async def query(call: CallbackQuery, state: FSMContext, db: MDB):
         if airalert_type in ["never", "st", "always"]:
             await db.users.update_one({"_id": call.message.chat.id}, {"$set": {"airalert": airalert_type}})
         user = await db.users.find_one({"_id": call.message.chat.id})
-        print(user["airalert"])
         await call.message.edit_text(text=f"""
 Виберіть коли ви хочете отримувати повідомлення повітряної тривоги/відбію. Наданий момент ви {airalert_list[user["airalert"]]}
 """, reply_markup=keyboards.airalert_kb_func(user["airalert"]))
