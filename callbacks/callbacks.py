@@ -27,8 +27,8 @@ async def ms_accept_callback(call: CallbackQuery, callback_data: MsCallback):
                    callback_data.ms_number_hv, callback_data.ms_students)
     await call.message.edit_text("Список відсутніх учнів успішно оновлений ✅")
 
-@router.callback_query(or_f(MsCallback.filter(F.data == "help_zvazok"), MsCallback.filter(F.data == "comm_help")))
-async def ms_accept_callback(call: CallbackQuery, callback_data: MsCallback):
+@router.callback_query(F.data.in_(["help_zvazok", "comm_help"]))
+async def help_zvazok_callback(call: CallbackQuery):
     text="""
 <b><i>Чому мені не відповіли адміни?</i></b> 
 
@@ -36,9 +36,8 @@ async def ms_accept_callback(call: CallbackQuery, callback_data: MsCallback):
 
 2. Стався технічний збій. Попробуйте надіслати повідомлення ще раз.
                                      
-<b>Якщо це вам не допомогло, то напишіть сюди: @denlid_uwu</b>
-"""
-    print("gggggggggggg")
+<b>Якщо це вам не допомогло, то напишіть сюди: @denlid_uwu</b>"""
+
     if call.data == "help_zvazok":
         await call.message.edit_text(text=text, reply_markup=keyboards.back_help)
     if call.data == "comm_help":

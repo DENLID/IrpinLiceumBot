@@ -9,3 +9,5 @@ router = Router()
 async def error_handler(event: ErrorEvent):
     if event.exception == "Telegram server says - Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message":
         pass
+    else:
+        print(event.exception)
