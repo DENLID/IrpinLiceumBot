@@ -2,7 +2,7 @@
 
 Open-soure бота ірпінського ліцея №2
 
-<b>Силка на бота: https://t.me/irpin_liceum_bot</b>
+<b>Посилання на бота: https://t.me/irpin_liceum_bot</b>
 
 <hr>
 
