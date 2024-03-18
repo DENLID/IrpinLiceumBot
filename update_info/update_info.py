@@ -29,11 +29,11 @@ def update_info_ms(class_letter, class_number, class_student, present_students, 
         xl[f"D1"] = "Кількість хворих відсутніх"
         xl[f"E1"] = "Відсутні"
 
-        for l in ["A","B","C"]:
+        for l in ["A","B","C","D"]:
             xl[f"{l}1"].font = xl[f"{l}1"].font.copy(bold=True)
             for n in range(100):
                 xl[f'{l}{n+1}'].alignment = Alignment(horizontal='center')
-        xl[f"D1"].font = xl[f"D1"].font.copy(bold=True)
+        xl[f"E1"].font = xl[f"D1"].font.copy(bold=True)
 
     number = ((class_number-1)*11)+alphabet_ukr.index(class_letter)+2
 

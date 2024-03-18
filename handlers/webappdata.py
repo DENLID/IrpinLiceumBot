@@ -25,6 +25,6 @@ async def wad_handler(message: Message, db: MDB):
 Кількість відсутніх в класі: {data["ms_number"]}
 Кількість хворих із відсутніх: {data["ms_number_hv"]}
 Відсутні: {data["ms"]}
-""", reply_markup=keyboards.ms_tf_func(data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms_number_hv"], data["ms"]))
+""", reply_markup=keyboards.ms_confirm_kb(data["class_letter"], int(data["class_number"]), data["students_number"], int(data["students_number"])-int(data["ms_number"]), data["ms_number_hv"], data["ms"]))
     else:
         await message.answer(f'Вибачте але ви не можете редагувати відсутніх в класі {data["class_number"]} - {data["class_letter"]}', reply_markup=keyboards.to_comm_kb)

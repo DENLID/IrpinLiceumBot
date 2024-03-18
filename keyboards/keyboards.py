@@ -113,7 +113,7 @@ class MsCallback(CallbackData, prefix="ms"):
 
 
 
-def ms_confirm(class_letter, class_number, class_student, present_students, ms_number_hv, ms_students):
+def ms_confirm_kb(class_letter, class_number, class_student, present_students, ms_number_hv, ms_students):
     ms_tf_kb = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text='Так, все правильно ✅', callback_data=MsCallback(action="ms_accept",
