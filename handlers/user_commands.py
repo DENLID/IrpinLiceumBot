@@ -1,10 +1,10 @@
-from aiogram.filters import Command, CommandStart, CommandObject
+from aiogram.filters import Command, CommandStart, CommandObject, or_f
 from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, Bot, F
 from motor.core import AgnosticDatabase as MDB
 
-from filters.filters import IsAdminChat, IsMsAdmin
+from filters.filters import IsAdminChat, IsMsAdmin, IsAdmin
 import keyboards.keyboards as keyboards
 import config
 
@@ -68,16 +68,29 @@ reply_markup=keyboards.ms_kb)
 async def ms_xlsx(message: Message):
     await message.answer_document(document=FSInputFile(config.path_ms), caption="Список відсутніх учнів в школі")
     
-@router.message(Command('news',), IsAdminChat())
+@router.message(Command('news'), or_f(IsAdminChat(), IsAdmin()))
 async def news(message: Message, bot: Bot, command: CommandObject, db: MDB):
     text = command.args
-    for u in await db.users.find({}):
-        try:
-            await bot.send_message(chat_id=u["_id"], text=text)
-        except:
-            pass
+    tag = text.split()[0]
 
-@router.message(Command('ban'), IsAdminChat())
+    if tag == "all":
+        users = db.users.find({})
+        exist = 1
+    else:
+        users = db.users.find({"tags": {"$in": [tag]}})
+        exist = await db.users.count_documents({"tags": {"$in": [tag]}})
+
+    if exist != 0:
+        async for user in users:
+            try:
+                await bot.send_message(chat_id=user["_id"], text=text.replace(tag, "", 0))
+            except:
+                pass
+        await message.answer(f"Повідомлення успішно розіслано ✅")
+    else:
+        await message.answer(f"Користувачів з тегом <code>{tag}</code> не знайдено ❌")
+
+@router.message(Command('ban'), or_f(IsAdminChat(), IsAdmin()))
 async def ban(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     chat_id = int(args[0])
@@ -93,7 +106,7 @@ async def ban(message: Message, command: CommandObject, db: MDB):
     else:
         await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
         
-@router.message(Command('unban'), IsAdminChat())
+@router.message(Command('unban'), or_f(IsAdminChat(), IsAdmin()))
 async def ban(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     chat_id = int(args[0])
@@ -109,12 +122,8 @@ async def ban(message: Message, command: CommandObject, db: MDB):
     else:
         await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
 
-@router.message(Command('uchcom'), IsAdminChat())
-async def uchcom(message: Message, bot: Bot):
-    
-    await bot.send_message(chat_id=None)
 
-@router.message(Command('add_tag'), IsAdminChat())
+@router.message(Command('add_tag'), or_f(IsAdminChat(), IsAdmin()))
 async def add_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     chat_id = int(args[0])
@@ -126,7 +135,7 @@ async def add_tag(message: Message, command: CommandObject, db: MDB):
     else:
         await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
 
-@router.message(Command('delete_tag'), IsAdminChat())
+@router.message(Command('delete_tag'), or_f(IsAdminChat(), IsAdmin()))
 async def delete_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     chat_id = int(args[0])
@@ -134,11 +143,11 @@ async def delete_tag(message: Message, command: CommandObject, db: MDB):
 
     if await db.users.find_one({"_id": chat_id}) != None:
         await db.users.update_one({"_id": chat_id}, {"$pull": {"tags": tag}})
-        await message.answer(f"Користувачу з ID: <code>{chat_id}</code> успішно забрно тег <code>{tag}</code> ✅")
+        await message.answer(f"Користувачу з ID: <code>{chat_id}</code> успішно забраний тег <code>{tag}</code> ✅")
     else:
         await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
 
-@router.message(Command('get_info'), IsAdminChat())
+@router.message(Command('get_info'), or_f(IsAdminChat(), IsAdmin()))
 async def delete_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     chat_id = int(args[0])
@@ -155,7 +164,6 @@ tags: {data["tags"]}
 """)
     else:
         await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
-
 
 
 @router.message(Command('getmyid'))
