@@ -172,5 +172,10 @@ async def getmyid(message: Message):
 Ваш телеграм айді: <code>{message.from_user.id}</code>
 Ваш телеграм чат айді: <code>{message.chat.id}</code>""")  
 
+@router.message(Command('register_student'))
+async def register_student(message: Message):
+    await message.answer("В розробці 🛠")
 
-
+@router.message(Command('pasckhalko'))
+async def register_student(message: Message):
+    await message.answer("卐")

@@ -6,8 +6,9 @@ from aiogram.types import (
     KeyboardButton
 )
 
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.filters.callback_data import CallbackData
-
+from update_info.update_info import alphabet_ukr
 
 def check_mark(str, data):
     if str == data:
@@ -41,6 +42,12 @@ menu_kb = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(
             text="🚨 Сповіщення повітряної тривоги 🚨", 
             callback_data="airalert"
+        )
+    ],
+    [
+        InlineKeyboardButton(
+            text="📕 Електронні підручники 📕", 
+            callback_data="books"
         )
     ],
     [
@@ -135,3 +142,46 @@ to_comm_kb = InlineKeyboardMarkup(inline_keyboard=[
         )
     ],
 ])
+
+def book_subject_kb(user):
+    all_class = [f"{n}-{l}" for n in range(11) for l in alphabet_ukr]
+    class_num = int(next((c for c in all_class if c in user["tags"]), None).split('-')[0])
+
+    items = [
+        "Математика", "Анг. Мова",
+        "Укр. Мова", "Укр. Літ.",
+        "Технології", "Мистецтво",
+        "Фізкультура"
+    ]
+
+    if class_num >= 2:
+        items.remove("Мистецтво")
+        items.extend(["Обр. Мис.", "Муз. Мис."])
+
+    if class_num >= 3:
+        items.append("Інформатика")
+
+    if class_num >= 5:
+        items.extend(["Історія", "Природознав.", "Осн. Здор."])
+
+    if class_num >= 6:
+        items.remove("Природознав.")
+        items.extend(["Географія", "Біологія"])
+
+    if class_num >= 7:
+        items.remove("Математика")
+        items.extend(["Алгебра", "Геометрія", "Хімія"])
+
+    if class_num >= 8:
+        items.remove("Обр. Мис.")
+        items.remove("Муз. Мис.")
+        items.append("Мистецтво")
+    
+    builder = InlineKeyboardBuilder()
+    [builder.button(text=item, callback_data="comming") for item in items]
+    builder.button(text="🔙 Назад", callback_data="menu")
+    l = [3]*round(len(items)/3)
+    l[len(l)-1] -= 1
+    builder.adjust(*l)
+
+    return builder.as_markup()

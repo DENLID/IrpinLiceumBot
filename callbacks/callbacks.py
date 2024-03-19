@@ -77,6 +77,10 @@ async def query(call: CallbackQuery, state: FSMContext, db: MDB):
     if call.data == "ms_decline":
         await call.message.edit_text("Натисніть на кнопку Form, щоб перейти на форму заповнення відсутніх учнів в вашому класі.", 
 reply_markup=keyboards.ms_kb)
+        
+    if call.data == "books":
+        await call.message.edit_text("Виберіть предмет підручника",
+reply_markup=keyboards.book_subject_kb(await db.users.find_one({"_id": call.message.chat.id})))
 
     if call.data == "comming":
         await call.answer("В розробці", show_alert=True)
