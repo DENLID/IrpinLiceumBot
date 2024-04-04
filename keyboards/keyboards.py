@@ -8,7 +8,8 @@ from aiogram.types import (
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.filters.callback_data import CallbackData
-from update_info.update_info import alphabet_ukr
+
+from utils.utils import get_user_class
 
 def check_mark(str, data):
     if str == data:
@@ -18,8 +19,10 @@ def check_mark(str, data):
 
 
 back_menu = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="menu")]])
+back_details = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="details")]])
 back_help = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="help")]])
 
+back_details_button = [InlineKeyboardButton(text='🔙 Назад', callback_data="details")]
 back_menu_button = [InlineKeyboardButton(text='🔙 Назад', callback_data="menu")]
 
 start_kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -46,8 +49,8 @@ menu_kb = InlineKeyboardMarkup(inline_keyboard=[
     ],
     [
         InlineKeyboardButton(
-            text="📕 Електронні підручники 📕", 
-            callback_data="books"
+            text="📲 Додатково 📲",
+            callback_data="details"
         )
     ],
     [
@@ -56,6 +59,22 @@ menu_kb = InlineKeyboardMarkup(inline_keyboard=[
             callback_data="help"
         )
     ]
+])
+
+details_kb = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(
+            text="📕 Електронні підручники 📕", 
+            callback_data="books"
+        )
+    ],
+    [
+        InlineKeyboardButton(
+            text="🔔 Розклад дзвінків 🔔",
+            callback_data="dzvinki"
+        )
+    ],
+    back_menu_button
 ])
 
 comm_kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -85,12 +104,6 @@ help_kb_menu = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(text='Мені не відповідають адміни', callback_data="help_zvazok")
     ],
     back_menu_button
-])
-
-ms_kb = ReplyKeyboardMarkup(keyboard=[
-    [
-        KeyboardButton(text="Form", web_app=WebAppInfo(url="https://denlid.github.io/IrpinLiceumBotWEBCITE/"))
-    ]
 ])
 
 def airalert_kb_func(data):
@@ -144,8 +157,7 @@ to_comm_kb = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 def book_subject_kb(user):
-    all_class = [f"{n}-{l}" for n in range(11) for l in alphabet_ukr]
-    class_num = int(next((c for c in all_class if c in user["tags"]), None).split('-')[0])
+    class_num = int(get_user_class(user)[0])
 
     items = [
         "Математика", "Анг. Мова",
@@ -179,9 +191,33 @@ def book_subject_kb(user):
     
     builder = InlineKeyboardBuilder()
     [builder.button(text=item, callback_data="comming") for item in items]
-    builder.button(text="🔙 Назад", callback_data="menu")
+    builder.button(text="🔙 Назад", callback_data="details")
     l = [3]*round(len(items)/3)
     l[len(l)-1] -= 1
     builder.adjust(*l)
 
     return builder.as_markup()
+
+
+ms_kb = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(
+            text="1",
+            callback_data="ms_1"
+        ),
+        InlineKeyboardButton(
+            text="2", 
+            callback_data="ms_2"
+        )
+    ],
+    [
+        InlineKeyboardButton(
+            text="3", 
+            callback_data="ms_3"
+        ),
+        InlineKeyboardButton(
+            text="4", 
+            callback_data="ms_4"
+        )
+    ]
+])

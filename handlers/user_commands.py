@@ -6,6 +6,7 @@ from motor.core import AgnosticDatabase as MDB
 
 from filters.filters import IsAdminChat, IsMsAdmin, IsAdmin
 import keyboards.keyboards as keyboards
+from utils.utils import get_user_class
 import config
 
 
@@ -60,8 +61,19 @@ async def help_message(message, ftype):
     
     
 @router.message(Command('ms'), IsMsAdmin())
-async def ms(message: Message):
-    await message.answer("Натисніть на кнопку Form, щоб перейти на форму заповнення відсутніх учнів в вашому класі.", 
+async def ms(message: Message, db: MDB):
+    user = db.users.find_one({"_id": message.chat.id})
+    user_class = get_user_class(user)
+
+    await message.answer(f"""
+Редакція відсутніх учнів в класі {user_class}.
+
+Загальна кількість учнів в класі: 
+Кількість відсутніх учнів в класі: 
+Кількість хворих із відсутніх: 
+Відсутні: 
+
+Виберіть пункт, який хочете редагувати:""", 
 reply_markup=keyboards.ms_kb)
 
 @router.message(Command('ms_xlsx'))
@@ -83,7 +95,7 @@ async def news(message: Message, bot: Bot, command: CommandObject, db: MDB):
     if exist != 0:
         async for user in users:
             try:
-                await bot.send_message(chat_id=user["_id"], text=text.replace(tag, "", 0))
+                await bot.send_message(chat_id=user["_id"], text=text.replace(tag, "", 1))
             except:
                 pass
         await message.answer(f"Повідомлення успішно розіслано ✅")

@@ -1,11 +1,11 @@
 from aiogram import F, Router
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, FSInputFile
 from aiogram.filters import or_f
 from aiogram.fsm.context import FSMContext
 from motor.core import AgnosticDatabase as MDB
 
 from handlers.user_commands import send_menu, help_message
-from utils.states import Communication
+from utils.states import Communication, MS_state
 from update_info.update_info import update_info_ms
 from keyboards.keyboards import MsCallback
 import keyboards.keyboards as keyboards
@@ -77,11 +77,35 @@ async def query(call: CallbackQuery, state: FSMContext, db: MDB):
     if call.data == "ms_decline":
         await call.message.edit_text("Натисніть на кнопку Form, щоб перейти на форму заповнення відсутніх учнів в вашому класі.", 
 reply_markup=keyboards.ms_kb)
-        
+
+    if call.data == "ms_1":
+        await call.message.edit_text("Введіть загальну кількість учнів в класі:")
+        await state.set_state(MS_state.students_number)
+    if call.data == "ms_2":
+        await call.message.edit_text("Введіть кількість відсутніх учнів в класі:")
+        await state.set_state(MS_state.ms_number)
+    if call.data == "ms_3":
+        await call.message.edit_text("Введіть кількість хворих із відсутніх:")
+        await state.set_state(MS_state.ms_number_hv)
+    if call.data == "ms_4":
+        await call.message.edit_text("Введіть відсутніх:")
+        await state.set_state(MS_state.ms)
+
     if call.data == "books":
         await call.message.edit_text("Виберіть предмет підручника",
 reply_markup=keyboards.book_subject_kb(await db.users.find_one({"_id": call.message.chat.id})))
+        
+    if call.data == "dzvinki":
+        await call.message.delete()
+        await call.message.answer_photo(photo=FSInputFile("dzvinki.jpg"), reply_markup=keyboards.back_details)
 
+    if call.data == "details":
+        try:
+            await call.message.edit_text("Додатково", reply_markup=keyboards.details_kb)
+        except:
+            await call.message.delete()
+            await call.message.answer("Додатково", reply_markup=keyboards.details_kb)
+    
     if call.data == "comming":
         await call.answer("В розробці", show_alert=True)
 
