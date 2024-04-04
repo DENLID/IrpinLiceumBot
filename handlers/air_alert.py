@@ -18,7 +18,7 @@ async def airalert_handler(message: Message, db: MDB):
         dt = datetime.now(ukraine_time)
         weekday = dt.weekday()
         
-        if weekday != 5 and weekday != 6 and datetime(dt.year, dt.month, dt.day, 8, 0, tzinfo=ukraine_time) <= dt <= datetime(dt.year, dt.month, dt.day, 18, 40, tzinfo=ukraine_time):
+        if weekday != 5 and weekday != 6 and datetime(dt.year, dt.month, dt.day, 8, 0, tzinfo=ukraine_time) <= dt <= datetime(dt.year, dt.month, dt.day, 17, 30, tzinfo=ukraine_time):
             async for u in db.users.find({"airalert": "st"}):
                 try:
                     await message.copy_to(u["_id"]) # Надсилання користувачам
