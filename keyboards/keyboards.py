@@ -21,6 +21,7 @@ def check_mark(str, data):
 back_menu = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="menu")]])
 back_details = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="details")]])
 back_help = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="help")]])
+back_ms = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="ms")]])
 
 back_details_button = [InlineKeyboardButton(text='🔙 Назад', callback_data="details")]
 back_menu_button = [InlineKeyboardButton(text='🔙 Назад', callback_data="menu")]
@@ -49,14 +50,12 @@ menu_kb = InlineKeyboardMarkup(inline_keyboard=[
     ],
     [
         InlineKeyboardButton(
-            text="📲 Додатково 📲",
-            callback_data="details"
-        )
-    ],
-    [
-        InlineKeyboardButton(
             text="🛠 Допомога 🛠", 
             callback_data="help"
+        ),
+        InlineKeyboardButton(
+            text="📲 Додатково 📲",
+            callback_data="details"
         )
     ]
 ])
@@ -218,6 +217,12 @@ ms_kb = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(
             text="4", 
             callback_data="ms_4"
+        )
+    ],
+    [
+        InlineKeyboardButton(
+            text="Надіслати ✅", 
+            callback_data="ms_accept"
         )
     ]
 ])

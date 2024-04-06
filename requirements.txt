@@ -6,3 +6,5 @@ pytz
 openpyxl
 pyTelegramBotAPI
 cachetools
+colorama
+flask

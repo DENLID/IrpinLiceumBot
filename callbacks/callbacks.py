@@ -4,8 +4,9 @@ from aiogram.filters import or_f
 from aiogram.fsm.context import FSMContext
 from motor.core import AgnosticDatabase as MDB
 
-from handlers.user_commands import send_menu, help_message
+from handlers.user_commands import send_menu, send_help, send_ms
 from utils.states import Communication, MS_state
+from utils.utils import get_user_class
 from update_info.update_info import update_info_ms
 from keyboards.keyboards import MsCallback
 import keyboards.keyboards as keyboards
@@ -20,12 +21,7 @@ airalert_list = {
     "always": "<b>завжди</b> отримуєте повідомлення"
 }
 
-@router.callback_query(MsCallback.filter(F.action == "ms_accept"))
-async def ms_accept_callback(call: CallbackQuery, callback_data: MsCallback):
-    update_info_ms(callback_data.class_letter, callback_data.class_number, 
-                   callback_data.class_student, callback_data.present_students, 
-                   callback_data.ms_number_hv, callback_data.ms_students)
-    await call.message.edit_text("Список відсутніх учнів успішно оновлений ✅")
+
 
 @router.callback_query(F.data.in_(["help_zvazok", "comm_help"]))
 async def help_zvazok_callback(call: CallbackQuery):
@@ -54,7 +50,7 @@ async def query(call: CallbackQuery, state: FSMContext, db: MDB):
 """, reply_markup=keyboards.comm_kb)
             
     if call.data == "help":
-        await help_message(call, "call")  
+        await send_help(call, "call")  
 
     if call.data == "help_command":
         await call.message.edit_text(text="""
@@ -78,18 +74,34 @@ async def query(call: CallbackQuery, state: FSMContext, db: MDB):
         await call.message.edit_text("Натисніть на кнопку Form, щоб перейти на форму заповнення відсутніх учнів в вашому класі.", 
 reply_markup=keyboards.ms_kb)
 
+    if call.data == "ms":
+        await send_ms(call, db=db, state=state, ftype="call")
+
     if call.data == "ms_1":
-        await call.message.edit_text("Введіть загальну кількість учнів в класі:")
+        await call.message.edit_text("Введіть загальну кількість учнів в класі:", reply_markup=None)
         await state.set_state(MS_state.students_number)
     if call.data == "ms_2":
-        await call.message.edit_text("Введіть кількість відсутніх учнів в класі:")
+        await call.message.edit_text("Введіть кількість відсутніх учнів в класі:", reply_markup=None)
         await state.set_state(MS_state.ms_number)
     if call.data == "ms_3":
-        await call.message.edit_text("Введіть кількість хворих із відсутніх:")
+        await call.message.edit_text("Введіть кількість хворих із відсутніх:", reply_markup=None)
         await state.set_state(MS_state.ms_number_hv)
     if call.data == "ms_4":
-        await call.message.edit_text("Введіть відсутніх:")
+        await call.message.edit_text("Введіть відсутніх:", reply_markup=None)
         await state.set_state(MS_state.ms)
+
+    if call.data == "ms_accept":
+        user = await db.users.find_one({"_id": call.message.chat.id})
+        user_class = get_user_class(user)
+        data = await state.get_data()
+        try:
+            update_info_ms(class_letter=user_class[2], class_number=int(user_class[0]), 
+                           class_student=data["students_number"], present_students=int(data["students_number"])-int(data["ms_number"]),
+                           ms_number_hv=data["ms_number_hv"], ms_students=data["ms"])
+            await state.clear()
+            await call.message.edit_text("Список відсутніх учнів успішно оновлений ✅")
+        except:
+            await call.answer("Будь ласка, заповніть всі пункти!", show_alert=True)
 
     if call.data == "books":
         await call.message.edit_text("Виберіть предмет підручника",

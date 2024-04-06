@@ -4,6 +4,7 @@ from aiogram.filters import or_f
 from aiogram.filters.exception import ExceptionTypeFilter
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types.error_event import ErrorEvent
+from colorama import Fore, Style
 
 router = Router()
 
@@ -20,3 +21,11 @@ async def error_handler(event: ErrorEvent, message: Message):
         await message.answer("Не коректний запис команди ❌")
     else:
         print(f"'{event.exception}'")
+
+@router.errors(ExceptionTypeFilter(TypeError))
+async def error_handler(event: ErrorEvent):
+    if str(event.exception) == "'_asyncio.Future' object is not subscriptable":
+        print(f"{event.exception}")
+        print(Fore.RED+"Походу ти десь забув await!"+Style.RESET_ALL)
+    else:
+        print(f"{event.exception}")

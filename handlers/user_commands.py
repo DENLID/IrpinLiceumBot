@@ -50,9 +50,9 @@ async def send_menu(message, ftype):
 
 @router.message(Command('help'))
 async def help(message: Message):
-    await help_message(message, "command")
+    await send_help(message, "command")
 
-async def help_message(message, ftype):
+async def send_help(message, ftype: str):
     text = "Виберіть запитання яке вас цікавить"
     if ftype == "command":
         await message.answer(text, reply_markup = keyboards.help_kb_command)
@@ -61,20 +61,41 @@ async def help_message(message, ftype):
     
     
 @router.message(Command('ms'), IsMsAdmin())
-async def ms(message: Message, db: MDB):
-    user = db.users.find_one({"_id": message.chat.id})
+async def ms(message: Message, db: MDB, state: FSMContext):
+    await send_ms(message=message, db=db, state=state, ftype="command")
+
+async def send_ms(message, db: MDB, state: FSMContext, ftype: str):
+    try:
+        id = message.chat.id
+    except:
+        id = message.message.chat.id
+
+    user = await db.users.find_one({"_id": id})
     user_class = get_user_class(user)
 
-    await message.answer(f"""
-Редакція відсутніх учнів в класі {user_class}.
+    data = await state.get_data()
 
-Загальна кількість учнів в класі: 
-Кількість відсутніх учнів в класі: 
-Кількість хворих із відсутніх: 
-Відсутні: 
+    def df(data_ce):
+        try:
+            return data[data_ce]
+        except:
+            return "🚫"
 
-Виберіть пункт, який хочете редагувати:""", 
-reply_markup=keyboards.ms_kb)
+    text = f"""
+<b>Редакція відсутніх учнів в класі {user_class}.</b>
+
+<b>1. Загальна кількість учнів в класі:</b> {df("students_number")}
+<b>2. Кількість відсутніх учнів в класі:</b> {df("ms_number")}
+<b>3. Кількість хворих із відсутніх:</b> {df("ms_number_hv")}
+<b>4. Відсутні:</b> {df("ms")}
+
+Виберіть пункт, який хочете редагувати:"""
+
+    if ftype == "command":
+        await message.answer(text, reply_markup=keyboards.ms_kb)
+    elif ftype == "call":
+        await message.message.edit_text(text, reply_markup=keyboards.ms_kb)
+
 
 @router.message(Command('ms_xlsx'))
 async def ms_xlsx(message: Message):
