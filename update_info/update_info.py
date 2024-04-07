@@ -43,11 +43,12 @@ def update_info_ms(class_letter, class_number, class_student, present_students, 
     xl[f"D{number}"] = ms_number_hv
     xl[f"E{number}"] = ms_students
         
+    # Функція вирівнювання стовбців
     for col in xl.columns:
         max_length = 0
-        column = col[0].column_letter # Get the column name
+        column = col[0].column_letter
         for cell in col:
-            try: # Necessary to avoid error on empty cells
+            try:
                 if len(str(cell.value)) > max_length:
                     max_length = len(str(cell.value))
             except:

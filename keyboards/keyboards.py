@@ -17,6 +17,8 @@ def check_mark(str, data):
     else:
         return ""
 
+badge_kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Замовити', url="https://t.me/irpin_liceum_bot?start=backpack_badge")]])
+buy_badge_kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="💬 Зв'язок з адмінами 💬", callback_data="comm")]])
 
 back_menu = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="menu")]])
 back_details = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='🔙 Назад', callback_data="details")]])

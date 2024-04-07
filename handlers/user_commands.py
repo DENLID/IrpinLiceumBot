@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram import Router, Bot, F
 from motor.core import AgnosticDatabase as MDB
 
-from filters.filters import IsAdminChat, IsMsAdmin, IsAdmin
+from filters.filters import IsAdminChat, IsMsAdmin, IsAdmin, CheckArg
 import keyboards.keyboards as keyboards
 from utils.utils import get_user_class
 import config
@@ -13,7 +13,7 @@ import config
 router = Router()
 
 
-@router.message(CommandStart())
+@router.message(CommandStart(), CheckArg(None))
 async def start(message: Message, db: MDB) -> None:
     print(message.chat.id)
     id = int(message.chat.id)
@@ -198,7 +198,6 @@ tags: {data["tags"]}
     else:
         await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
 
-
 @router.message(Command('getmyid'))
 async def getmyid(message: Message):
     await message.answer(f"""
@@ -209,6 +208,19 @@ async def getmyid(message: Message):
 async def register_student(message: Message):
     await message.answer("В розробці 🛠")
 
-@router.message(Command('pasckhalko'))
-async def register_student(message: Message):
-    await message.answer("卐")
+@router.message(CommandStart(), CheckArg("backpack_badge"))
+async def start_badge(message: Message, db: MDB, state: FSMContext):
+    await message.answer("""
+💛 Привіт, учні! 💙
+
+🌟 Сьогодні ми запускаємо благодійну акцію! Відтепер у вас є можливість прикрасити свій рюкзак яскравими та стильними значками.
+
+🌈 Половина прибутку піде на допомогу ЗСУ. Це не лише можливість зробити свій рюкзак унікальним, але і шанс зробити добру справу!
+
+📲 Можливість придбати значки буде в нашому телеграм боті, натиснувши кнопку знизу та зв'язавшись з адмінами.
+
+📅 Забрати свій значок можна буде у понеділок, з 10:00 до 14:00. Запрошуємо всіх бажаючих долучитися!
+
+Разом до перемоги! 💛💙
+""", reply_markup=keyboards.buy_badge_kb)
+    

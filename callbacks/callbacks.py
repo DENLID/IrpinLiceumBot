@@ -22,7 +22,6 @@ airalert_list = {
 }
 
 
-
 @router.callback_query(F.data.in_(["help_zvazok", "comm_help"]))
 async def help_zvazok_callback(call: CallbackQuery):
     text="""
@@ -38,6 +37,7 @@ async def help_zvazok_callback(call: CallbackQuery):
         await call.message.edit_text(text=text, reply_markup=keyboards.back_help)
     if call.data == "comm_help":
         await call.message.edit_text(text=text, reply_markup=keyboards.back_menu)
+
 
 @router.callback_query()
 async def query(call: CallbackQuery, state: FSMContext, db: MDB):
