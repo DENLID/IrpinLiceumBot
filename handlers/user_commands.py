@@ -223,4 +223,13 @@ async def start_badge(message: Message, db: MDB, state: FSMContext):
 
 Разом до перемоги! 💛💙
 """, reply_markup=keyboards.buy_badge_kb)
-    
+
+@router.message(Command('confirm_person'))
+async def confirm_person(message: Message):
+    await send_confirm_person(message)
+
+async def send_confirm_person(message):
+    try:
+        await message.edit_text("Виберіть спосіб підтвердження особи", reply_markup=keyboards.confirm_person_kb)
+    except:
+        await message.answer("Виберіть спосіб підтвердження особи", reply_markup=keyboards.confirm_person_kb)

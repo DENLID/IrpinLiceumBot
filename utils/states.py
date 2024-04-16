@@ -13,3 +13,7 @@ class MS_state(StatesGroup):
     ms_number = State()
     ms_number_hv = State()
     ms = State()
+
+class ConfirmPerson(StatesGroup):
+    email = State()
+    phone = State()

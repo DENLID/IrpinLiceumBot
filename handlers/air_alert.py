@@ -4,7 +4,6 @@ from pytz import timezone
 from datetime import datetime
 from motor.core import AgnosticDatabase as MDB
 
-import keyboards.keyboards as keyboards
 import config
 
 
@@ -12,7 +11,7 @@ router = Router()
 
 
 @router.channel_post()
-async def airalert_handler(message: Message, db: MDB):
+async def airalert_handler(message: Message, db: MDB, bot: Bot):
     if message.chat.id == config.channel_all_to:
         ukraine_time = timezone('Europe/Kiev')
         dt = datetime.now(ukraine_time)
@@ -29,6 +28,6 @@ async def airalert_handler(message: Message, db: MDB):
         
         async for u in db.users.find({"airalert": "always"}):
             try:
-                await message.copy_to(u["_id"])
+                bot.send_message(u["_id"], "<b>Увага! Повітряна тривога</b> 🔴")
             except:
                 pass

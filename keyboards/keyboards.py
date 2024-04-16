@@ -228,3 +228,18 @@ ms_kb = InlineKeyboardMarkup(inline_keyboard=[
         )
     ]
 ])
+
+confirm_person_kb = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(
+            text="Email",
+            callback_data="confirm_person_email"
+        )
+    ],
+    [
+        InlineKeyboardButton(
+            text="Номер телефону", 
+            callback_data="comming"
+        )
+    ]
+])

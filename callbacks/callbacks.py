@@ -4,8 +4,8 @@ from aiogram.filters import or_f
 from aiogram.fsm.context import FSMContext
 from motor.core import AgnosticDatabase as MDB
 
-from handlers.user_commands import send_menu, send_help, send_ms
-from utils.states import Communication, MS_state
+from handlers.user_commands import send_menu, send_help, send_ms, send_confirm_person
+from utils.states import Communication, MS_state, ConfirmPerson
 from utils.utils import get_user_class
 from update_info.update_info import update_info_ms
 from keyboards.keyboards import MsCallback
@@ -78,16 +78,16 @@ reply_markup=keyboards.ms_kb)
         await send_ms(call, db=db, state=state, ftype="call")
 
     if call.data == "ms_1":
-        await call.message.edit_text("Введіть загальну кількість учнів в класі:", reply_markup=None)
+        await call.message.edit_text("Надішліть загальну кількість учнів в класі:", reply_markup=None)
         await state.set_state(MS_state.students_number)
     if call.data == "ms_2":
-        await call.message.edit_text("Введіть кількість відсутніх учнів в класі:", reply_markup=None)
+        await call.message.edit_text("Надішліть кількість відсутніх учнів в класі:", reply_markup=None)
         await state.set_state(MS_state.ms_number)
     if call.data == "ms_3":
-        await call.message.edit_text("Введіть кількість хворих із відсутніх:", reply_markup=None)
+        await call.message.edit_text("Надішліть кількість хворих із відсутніх:", reply_markup=None)
         await state.set_state(MS_state.ms_number_hv)
     if call.data == "ms_4":
-        await call.message.edit_text("Введіть відсутніх:", reply_markup=None)
+        await call.message.edit_text("Надішліть відсутніх:", reply_markup=None)
         await state.set_state(MS_state.ms)
 
     if call.data == "ms_accept":
@@ -113,11 +113,18 @@ reply_markup=keyboards.book_subject_kb(await db.users.find_one({"_id": call.mess
 
     if call.data == "details":
         try:
-            await call.message.edit_text("Додатково", reply_markup=keyboards.details_kb)
+            await call.message.edit_text("<b>Додатково</b>", reply_markup=keyboards.details_kb)
         except:
             await call.message.delete()
             await call.message.answer("Додатково", reply_markup=keyboards.details_kb)
     
+    if call.data == "confirm_person":
+        await send_confirm_person(call.message)
+
+    if call.data == "confirm_person_email":
+        await call.message.edit_text("Надішліть свій шкільний email:")
+        await state.set_state(ConfirmPerson.email)
+
     if call.data == "comming":
         await call.answer("В розробці", show_alert=True)
 
