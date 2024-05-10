@@ -23,7 +23,6 @@ def send_email(receiver, text):
         msg = MIMEText(text)
         msg["Subject"] = "CLICK ME PLEASE!"
         server.sendmail(sender, receiver, msg.as_string())
-
         return "The message was sent successfully!"
     except Exception as _ex:
         return f"{_ex}\nCheck your login or password please!"

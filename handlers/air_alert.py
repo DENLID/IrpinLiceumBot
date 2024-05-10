@@ -28,6 +28,9 @@ async def airalert_handler(message: Message, db: MDB, bot: Bot):
         
         async for u in db.users.find({"airalert": "always"}):
             try:
-                await bot.send_message(u["_id"], "<b>Увага! Повітряна тривога</b> 🔴")
+                if "Увага! Повітряна тривога" in message.text:
+                    await bot.send_message(u["_id"], "<b>Увага! Повітряна тривога</b> 🔴")
+                elif "Відбій повітряної тривоги" in message.text:
+                    await bot.send_message(u["_id"], "<b>Відбій повітряної тривоги</b> 🟢")
             except:
                 pass

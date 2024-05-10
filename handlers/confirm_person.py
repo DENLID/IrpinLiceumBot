@@ -12,8 +12,10 @@ import config
 router = Router()
 
 
-@router.message(ConfirmPerson())
+@router.message(ConfirmPerson.email)
 async def handle_email(message: Message, bot: Bot):
     text = message.text
-    send_email(receiver=text, text="HELOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+    print(text)
+    print(send_email(receiver=text, text="HELOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"))
+    
     

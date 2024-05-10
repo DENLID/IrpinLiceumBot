@@ -6,7 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from threading import Thread
 
 from errors import errors
-from handlers import user_commands, air_alert, communication, webappdata, ms
+from handlers import user_commands, air_alert, communication, webappdata, ms, confirm_person
 from callbacks import callbacks
 from air_alert.air_alert import pull_air_alert
 from middlewares.anti_flood import AntiFloodMiddleware
@@ -26,6 +26,7 @@ async def main():
         air_alert.router,
         webappdata.router,
         communication.router,
+        confirm_person.router,
         ms.router,
         callbacks.router,
         errors.router
