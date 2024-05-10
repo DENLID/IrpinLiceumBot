@@ -94,20 +94,20 @@ reply_markup=keyboards.ms_kb)
         user = await db.users.find_one({"_id": call.message.chat.id})
         user_class = get_user_class(user)
         data = await state.get_data()
-        #try:
         try:
-            ucn = int(user_class[0]+user_class[1])
-            ucl = user_class[3]
+            try:
+                ucn = int(user_class[0]+user_class[1])
+                ucl = user_class[3]
+            except:
+                ucn = int(user_class[0])
+                ucl = user_class[2]
+            update_info_ms(class_letter=ucl, class_number=ucn, 
+                            class_student=data["students_number"], present_students=int(data["students_number"])-int(data["ms_number"]),
+                            ms_number_hv=data["ms_number_hv"], ms_students=data["ms"])
+            await state.clear()
+            await call.message.edit_text("Список відсутніх учнів успішно оновлений ✅")
         except:
-            ucn = int(user_class[0])
-            ucl = user_class[2]
-        update_info_ms(class_letter=ucl, class_number=ucn, 
-                        class_student=data["students_number"], present_students=int(data["students_number"])-int(data["ms_number"]),
-                        ms_number_hv=data["ms_number_hv"], ms_students=data["ms"])
-        await state.clear()
-        await call.message.edit_text("Список відсутніх учнів успішно оновлений ✅")
-        #except:
-            #await call.answer("Будь ласка, заповніть всі пункти!", show_alert=True)
+            await call.answer("Будь ласка, заповніть всі пункти!", show_alert=True)
 
     if call.data == "books":
         await call.message.edit_text("Виберіть предмет підручника",
