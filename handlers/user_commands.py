@@ -159,44 +159,61 @@ async def ban(message: Message, command: CommandObject, db: MDB):
 @router.message(Command('add_tag'), or_f(IsAdminChat(), IsAdmin()))
 async def add_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
-    chat_id = int(args[0])
+    identifier = args[0]
     tag = args[1]
 
-    if await db.users.find_one({"_id": chat_id}) != None:
-        await db.users.update_one({"_id": chat_id}, {"$push": {"tags": tag}})
-        await message.answer(f"Користувачу з ID: <code>{chat_id}</code> успішно добавлений тег <code>{tag}</code> ✅")
+    if identifier.isdigit():
+        chat_id = int(identifier)
+        user = await db.users.find_one({"_id": chat_id})
     else:
-        await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
+        username = identifier.lstrip('@')
+        user = await db.users.find_one({"username": username})
 
-@router.message(Command('delete_tag'), or_f(IsAdminChat(), IsAdmin()))
+    if user != None:
+        await db.users.update_one({"_id": user["_id"]}, {"$push": {"tags": tag}})
+        await message.answer(f"Користувач успішно отримав тег <code>{tag}</code> ✅")
+    else:
+        await message.answer(f"Користувач не знайдений ❌")
+
+@router.message(Command('remove_tag'), or_f(IsAdminChat(), IsAdmin()))
 async def delete_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
-    chat_id = int(args[0])
+    identifier = args[0]
     tag = args[1]
 
-    if await db.users.find_one({"_id": chat_id}) != None:
-        await db.users.update_one({"_id": chat_id}, {"$pull": {"tags": tag}})
-        await message.answer(f"Користувачу з ID: <code>{chat_id}</code> успішно забраний тег <code>{tag}</code> ✅")
+    if identifier.isdigit():
+        user = await db.users.find_one({"_id": int(identifier)})
     else:
-        await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
+        username = identifier.lstrip('@')
+        user = await db.users.find_one({"username": username})
 
-@router.message(Command('get_info'), or_f(IsAdminChat(), IsAdmin()))
+    if user != None:
+        await db.users.update_one({"_id": user["_id"]}, {"$pull": {"tags": tag}})
+        await message.answer(f"Користувач успішно отримав тег <code>{tag}</code> ✅")
+    else:
+        await message.answer(f"Користувач не знайдений ❌")
+
+@router.message(Command('info'), or_f(IsAdminChat(), IsAdmin()))
 async def delete_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
-    chat_id = int(args[0])
+    identifier = args[0]
 
-    data = await db.users.find_one({"_id": chat_id})
+    if identifier.isdigit():
+        user = await db.users.find_one({"_id": int(identifier)})
+    else:
+        username = identifier.lstrip('@')
+        user = await db.users.find_one({"username": username})
 
-    if data != None:
+    if user != None:
         await message.answer(f"""
 Інформація про користувача:
-ID: <code>{data["_id"]}</code>
-username: @{data["username"]}
-airalert: {data["airalert"]}
-tags: {data["tags"]}
+ID: <code>{user["_id"]}</code>
+username: @{user["username"]}
+airalert: {user["airalert"]}
+tags: {user["tags"]}
 """)
     else:
-        await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
+        await message.answer(f"Користувач не знайдений ❌")
 
 @router.message(Command('getmyid'))
 async def getmyid(message: Message):

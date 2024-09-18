@@ -10,7 +10,6 @@ def get_user_class(user):
     user_class = next((c for c in all_class if c in user["tags"]), None)
     return user_class
 
-
 def send_email(receiver, text):
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()
@@ -21,7 +20,7 @@ def send_email(receiver, text):
     try:
         server.login(sender, password)
         msg = MIMEText(text)
-        msg["Subject"] = "CLICK ME PLEASE!"
+        msg["Subject"] = "Ірпінський ліцей №2 | BOT"
         server.sendmail(sender, receiver, msg.as_string())
         return "The message was sent successfully!"
     except Exception as _ex:

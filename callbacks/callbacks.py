@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from motor.core import AgnosticDatabase as MDB
 
 from handlers.user_commands import send_menu, send_help, send_ms, send_confirm_person
+from handlers.confirm_person import send_email_code
 from utils.states import Communication, MS_state, ConfirmPerson
 from utils.utils import get_user_class
 from update_info.update_info import update_info_ms
@@ -130,6 +131,9 @@ reply_markup=keyboards.book_subject_kb(await db.users.find_one({"_id": call.mess
     if call.data == "confirm_person_email":
         await call.message.edit_text("Надішліть свій шкільний email:")
         await state.set_state(ConfirmPerson.email)
+
+    if call.data == "send_email_code":
+        send_email_code(call.message, call.message.text, state)
 
     if call.data == "comming":
         await call.answer("В розробці", show_alert=True)

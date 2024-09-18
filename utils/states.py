@@ -16,4 +16,6 @@ class MS_state(StatesGroup):
 
 class ConfirmPerson(StatesGroup):
     email = State()
+    email_code = State()
     phone = State()
+    
