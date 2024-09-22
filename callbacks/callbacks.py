@@ -7,7 +7,6 @@ from motor.core import AgnosticDatabase as MDB
 from handlers.user_commands import send_menu, send_help, send_ms, send_confirm_person
 from handlers.confirm_person import send_email_code
 from utils.states import Communication, MS_state, ConfirmPerson
-from utils.utils import get_user_class
 from update_info.update_info import update_info_ms
 from keyboards.keyboards import MsCallback
 import keyboards.keyboards as keyboards
@@ -93,13 +92,13 @@ reply_markup=keyboards.ms_kb)
 
     if call.data == "ms_accept":
         user = await db.users.find_one({"_id": call.message.chat.id})
-        user_class = get_user_class(user)
+        user_class = user["class"]
         data = await state.get_data()
         try:
-            try:
+            if user_class[1].isdigit():
                 ucn = int(user_class[0]+user_class[1])
                 ucl = user_class[3]
-            except:
+            else:
                 ucn = int(user_class[0])
                 ucl = user_class[2]
             update_info_ms(class_letter=ucl, class_number=ucn, 

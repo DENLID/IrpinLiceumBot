@@ -15,8 +15,14 @@ router = Router()
 
 @router.message(CommandStart(), CheckArg(None))
 async def start(message: Message, db: MDB) -> None:
-    print(message.chat.id)
     id = int(message.chat.id)
+
+    print({
+        "id": id, 
+        "name": message.from_user.full_name, 
+        "username": message.from_user.username
+    })
+
 
     if await db.users.count_documents({"_id": id}) == 0:
         await db.users.insert_one(
@@ -26,6 +32,9 @@ async def start(message: Message, db: MDB) -> None:
         "airalert": "never",
         "tags": []
     })
+    else:
+        if (await db.users.find_one({"_id": id}))["username"] != message.from_user.username:
+            await db.users.update_one({"_id": id}, {"$set": {"username": message.from_user.username}})
 
     await message.answer(text="""
 Привіт, я телеграм бот
@@ -71,7 +80,6 @@ async def send_ms(message, db: MDB, state: FSMContext, ftype: str):
         id = message.message.chat.id
 
     user = await db.users.find_one({"_id": id})
-    user_class = get_user_class(user)
 
     data = await state.get_data()
 
@@ -82,7 +90,7 @@ async def send_ms(message, db: MDB, state: FSMContext, ftype: str):
             return "🚫"
 
     text = f"""
-<b>Редакція відсутніх учнів в класі {user_class}.</b>
+<b>Редакція відсутніх учнів в класі {user["class"]}.</b>
 
 <b>1. Загальна кількість учнів в класі:</b> {df("students_number")}
 <b>2. Кількість відсутніх учнів в класі:</b> {df("ms_number")}
@@ -97,7 +105,7 @@ async def send_ms(message, db: MDB, state: FSMContext, ftype: str):
         await message.message.edit_text(text, reply_markup=keyboards.ms_kb)
 
 
-@router.message(Command('ms_xlsx'))
+@router.message(Command('ms_xlsx'), or_f(IsAdminChat(), IsAdmin()))
 async def ms_xlsx(message: Message):
     await message.answer_document(document=FSInputFile(config.path_ms), caption="Список відсутніх учнів в школі")
     
@@ -215,6 +223,24 @@ tags: {user["tags"]}
     else:
         await message.answer(f"Користувач не знайдений ❌")
 
+@router.message(Command('set'), or_f(IsAdminChat(), IsAdmin()))
+async def confirm_person(message: Message, command: CommandObject, db: MDB):
+    args = command.args.split()
+    identifier = args[0]
+
+    if identifier.isdigit():
+        user = await db.users.find_one({"_id": int(identifier)})
+    else:
+        username = identifier.lstrip('@')
+        user = await db.users.find_one({"username": username})
+
+    if user != None:
+        await db.users.update_one({"_id": user["_id"]}, {"$set": {args[1]: args[2]}})
+        await message.answer(f"Успішно ✅")
+    else:
+        await message.answer(f"Користувач не знайдений ❌")
+    
+
 @router.message(Command('getmyid'))
 async def getmyid(message: Message):
     await message.answer(f"""
@@ -250,3 +276,4 @@ async def send_confirm_person(message):
         await message.edit_text("Виберіть спосіб підтвердження особи", reply_markup=keyboards.confirm_person_kb)
     except:
         await message.answer("Виберіть спосіб підтвердження особи", reply_markup=keyboards.confirm_person_kb)
+

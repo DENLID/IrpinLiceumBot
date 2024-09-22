@@ -4,12 +4,14 @@ from aiogram.enums import ParseMode
 from aiogram.client.bot import DefaultBotProperties
 from motor.motor_asyncio import AsyncIOMotorClient
 from threading import Thread
+import sys
 
 from errors import errors
 from handlers import user_commands, air_alert, communication, webappdata, ms, confirm_person
 from callbacks import callbacks
 from air_alert.air_alert import pull_air_alert
 from middlewares.anti_flood import AntiFloodMiddleware
+from utils.utils import ConsoleRedirector
 import config
 
 async def main():
@@ -32,7 +34,8 @@ async def main():
         errors.router
     )
 
-    th = Thread(target=pull_air_alert).start()
+    Thread(target=pull_air_alert).start()
+    sys.stdout = ConsoleRedirector()
 
     #logging.basicConfig(level=logging.INFO)
     await bot.delete_webhook(drop_pending_updates=True)

@@ -1,6 +1,7 @@
 from update_info.update_info import alphabet_ukr
 from email.mime.text import MIMEText
-import smtplib
+from pymongo import MongoClient
+import smtplib, sys, telebot
 
 import config
 
@@ -25,3 +26,20 @@ def send_email(receiver, text):
         return "The message was sent successfully!"
     except Exception as _ex:
         return f"{_ex}\nCheck your login or password please!"
+
+class ConsoleRedirector:
+    def __init__(self):
+        self.bot = telebot.TeleBot("8032219145:AAF11hJJP3In0kU8Vk8ZI8UmayvLBgfDy8g")
+        self.db = MongoClient(config.mongo_api).ILdb
+        self.console = sys.stdout
+        
+
+    def write(self, message):
+        if message.strip() != "":
+            for user in list(self.db.users.find({"tags": "logging"})):
+                self.bot.send_message(user["_id"], message)
+        self.console.write(message)
+        self.console.flush()
+
+    def flush(self):
+        pass  # Для совместимости с интерфейсом sys.stdout
