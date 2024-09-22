@@ -4,9 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram import Router, Bot, F
 from motor.core import AgnosticDatabase as MDB
 
-from filters.filters import IsAdminChat, IsMsAdmin, IsAdmin, CheckArg
+from filters.filters import IsAdminChat, IsAdmin, CheckArg, HasTag
 import keyboards.keyboards as keyboards
-from utils.utils import get_user_class
 import config
 
 
@@ -69,7 +68,7 @@ async def send_help(message, ftype: str):
         await message.message.edit_text(text, reply_markup = keyboards.help_kb_menu)
     
     
-@router.message(Command('ms'), IsMsAdmin())
+@router.message(Command('ms'), HasTag("ms_admin"))
 async def ms(message: Message, db: MDB, state: FSMContext):
     await send_ms(message=message, db=db, state=state, ftype="command")
 
@@ -105,7 +104,7 @@ async def send_ms(message, db: MDB, state: FSMContext, ftype: str):
         await message.message.edit_text(text, reply_markup=keyboards.ms_kb)
 
 
-@router.message(Command('ms_xlsx'), or_f(IsAdminChat(), IsAdmin()))
+@router.message(Command('ms_xlsx'), HasTag("ms_admin"))
 async def ms_xlsx(message: Message):
     await message.answer_document(document=FSInputFile(config.path_ms), caption="Список відсутніх учнів в школі")
     
