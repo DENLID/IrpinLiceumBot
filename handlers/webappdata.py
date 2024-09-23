@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram import Router, Bot, F
 from motor.core import AgnosticDatabase as MDB
 
-from filters.filters import IsAdminChat, IsMsAdmin, IsWadMessage
+from filters.filters import IsAdminChat, IsWadMessage
 import keyboards.keyboards as keyboards
 import config, json
 
