@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from motor.core import AgnosticDatabase as MDB
 
 from utils.states import MS_state
-from filters.filters import IsAdminChat, IsWadMessage, IsMsAdmin
+from filters.filters import IsAdminChat, IsWadMessage
 import keyboards.keyboards as keyboards
 import config
 
