@@ -9,8 +9,6 @@ from aiogram.types import (
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.filters.callback_data import CallbackData
 
-from utils.utils import get_user_class
-
 def check_mark(str, data):
     if str == data:
         return "✅"
