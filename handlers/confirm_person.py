@@ -49,4 +49,3 @@ async def handle_email_code(message: Message, bot: Bot, db: MDB):
 
     if verify_codes[message.chat.id] == text:
         await db.users.update_one({"_id": message.chat.id}, {"$pull": {"tags": "verified"}})
-
