@@ -10,7 +10,7 @@ import json
 alphabet_ukr = ["А", "Б", "В", "Г", "Д", "Е", "Є", "Ж", "З", "И"]
 
 
-def update_info_ms(class_letter, class_number, class_student, present_students, ms_number_hv, ms_students):
+def update_info_ms(class_number, class_letter, class_student, present_students, ms_number_hv, ms_students):
     ukraine_time = timezone('Europe/Kiev')
     dt = datetime.datetime.now(ukraine_time)
     dmy = f"{dt.day}.{dt.month}.{dt.year}"

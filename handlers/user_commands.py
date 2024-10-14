@@ -5,6 +5,7 @@ from aiogram import Router, Bot, F
 from motor.core import AgnosticDatabase as MDB
 
 from filters.filters import IsAdminChat, IsAdmin, CheckArg, HasTag
+from utils.utils import get_chat_id
 import keyboards.keyboards as keyboards
 import config
 
@@ -44,71 +45,53 @@ async def start(message: Message, db: MDB) -> None:
 
 
 @router.message(Command('menu'))
-async def menu(message: Message):
-    await send_menu(message, "command")
-
-async def send_menu(message, ftype):
+async def menu(message: Message, ftype: str = None):
     text = """
 <b>Меню</b>
 """
     if ftype == "call":
         await message.message.edit_text(text=text, reply_markup=keyboards.menu_kb)
-    elif ftype == "command":
+    else:
         await message.answer(text=text, reply_markup=keyboards.menu_kb)
 
 @router.message(Command('help'))
-async def help(message: Message):
-    await send_help(message, "command")
-
-async def send_help(message, ftype: str):
+async def help(message: Message, ftype: str = None):
     text = "Виберіть запитання яке вас цікавить"
-    if ftype == "command":
-        await message.answer(text, reply_markup = keyboards.help_kb_command)
-    elif ftype == "call":
+    if ftype == "call":
         await message.message.edit_text(text, reply_markup = keyboards.help_kb_menu)
+    else:
+        await message.answer(text, reply_markup = keyboards.help_kb_command)
     
     
 @router.message(Command('ms'), HasTag("ms_admin"))
-async def ms(message: Message, db: MDB, state: FSMContext):
-    await send_ms(message=message, db=db, state=state, ftype="command")
-
-async def send_ms(message, db: MDB, state: FSMContext, ftype: str):
-    try:
-        id = message.chat.id
-    except:
-        id = message.message.chat.id
+async def ms(message: Message, db: MDB, state: FSMContext, ftype: str = None):
+    id = get_chat_id(message)
 
     user = await db.users.find_one({"_id": id})
 
     data = await state.get_data()
 
-    def df(data_ce):
-        try:
-            return data[data_ce]
-        except:
-            return "🚫"
-
     text = f"""
-<b>Редакція відсутніх учнів в класі {user["class"]}.</b>
+<b>Редакція відсутніх учнів в класі {user['class']}.</b>
 
-<b>1. Загальна кількість учнів в класі:</b> {df("students_number")}
-<b>2. Кількість відсутніх учнів в класі:</b> {df("ms_number")}
-<b>3. Кількість хворих із відсутніх:</b> {df("ms_number_hv")}
-<b>4. Відсутні:</b> {df("ms")}
+<b>1. Загальна кількість учнів в класі:</b> {data.get('students_number', '🚫')}
+<b>2. Кількість відсутніх учнів в класі:</b> {data.get('ms_number', '🚫')}
+<b>3. Кількість хворих із відсутніх:</b> {data.get('ms_number_hv', '🚫')}
+<b>4. Відсутні:</b> {data.get('ms', '🚫')}
 
 Виберіть пункт, який хочете редагувати:"""
 
     if ftype == "command":
-        await message.answer(text, reply_markup=keyboards.ms_kb)
-    elif ftype == "call":
         await message.message.edit_text(text, reply_markup=keyboards.ms_kb)
+    else:
+        await message.answer(text, reply_markup=keyboards.ms_kb)
 
 
 @router.message(Command('ms_xlsx'), HasTag("ms_admin"))
 async def ms_xlsx(message: Message):
     await message.answer_document(document=FSInputFile(config.path_ms), caption="Список відсутніх учнів в школі")
     
-@router.message(Command('news'), or_f(IsAdminChat(), IsAdmin()))
+@router.message(Command('news'), IsAdmin())
 async def news(message: Message, bot: Bot, command: CommandObject, db: MDB):
     text = command.args
     tag = text.split()[0]
@@ -130,7 +113,7 @@ async def news(message: Message, bot: Bot, command: CommandObject, db: MDB):
     else:
         await message.answer(f"Користувачів з тегом <code>{tag}</code> не знайдено ❌")
 
-@router.message(Command('ban'), or_f(IsAdminChat(), IsAdmin()))
+@router.message(Command('ban'), IsAdmin())
 async def ban(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     chat_id = int(args[0])
@@ -146,7 +129,7 @@ async def ban(message: Message, command: CommandObject, db: MDB):
     else:
         await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
         
-@router.message(Command('unban'), or_f(IsAdminChat(), IsAdmin()))
+@router.message(Command('unban'), IsAdmin())
 async def ban(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     chat_id = int(args[0])
@@ -163,7 +146,7 @@ async def ban(message: Message, command: CommandObject, db: MDB):
         await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
 
 
-@router.message(Command('add_tag'), or_f(IsAdminChat(), IsAdmin()))
+@router.message(Command('add_tag'), IsAdmin())
 async def add_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     identifier = args[0]
@@ -182,7 +165,7 @@ async def add_tag(message: Message, command: CommandObject, db: MDB):
     else:
         await message.answer(f"Користувач не знайдений ❌")
 
-@router.message(Command('remove_tag'), or_f(IsAdminChat(), IsAdmin()))
+@router.message(Command('remove_tag'), IsAdmin())
 async def delete_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     identifier = args[0]
@@ -200,7 +183,7 @@ async def delete_tag(message: Message, command: CommandObject, db: MDB):
     else:
         await message.answer(f"Користувач не знайдений ❌")
 
-@router.message(Command('info'), or_f(IsAdminChat(), IsAdmin()))
+@router.message(Command('info'), IsAdmin())
 async def delete_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     identifier = args[0]
@@ -222,7 +205,7 @@ tags: {user["tags"]}
     else:
         await message.answer(f"Користувач не знайдений ❌")
 
-@router.message(Command('set'), or_f(IsAdminChat(), IsAdmin()))
+@router.message(Command('set'), IsAdmin())
 async def confirm_person(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     identifier = args[0]

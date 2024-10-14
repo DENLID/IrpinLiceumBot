@@ -156,7 +156,7 @@ to_comm_kb = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 def book_subject_kb(user):
-    class_num = int(get_user_class(user)[0])
+    class_num = int(user["class"].split('-')[0])
 
     items = [
         "Математика", "Анг. Мова",

@@ -4,7 +4,7 @@ from aiogram.filters import or_f
 from aiogram.fsm.context import FSMContext
 from motor.core import AgnosticDatabase as MDB
 
-from handlers.user_commands import send_menu, send_help, send_ms, send_confirm_person
+from handlers.user_commands import menu, help, ms, confirm_person
 from handlers.confirm_person import send_email_code
 from utils.states import Communication, MS_state, ConfirmPerson
 from update_info.update_info import update_info_ms
@@ -42,7 +42,7 @@ async def help_zvazok_callback(call: CallbackQuery):
 @router.callback_query()
 async def query(call: CallbackQuery, state: FSMContext, db: MDB):
     if call.data == "menu":
-        await send_menu(call, "call")
+        await menu(call, "call")
     if call.data == "comm":
         await state.set_state(Communication.mess)
         await call.message.edit_text(text="""
@@ -50,7 +50,7 @@ async def query(call: CallbackQuery, state: FSMContext, db: MDB):
 """, reply_markup=keyboards.comm_kb)
             
     if call.data == "help":
-        await send_help(call, "call")  
+        await help(call, "call")  
 
     if call.data == "help_command":
         await call.message.edit_text(text="""
@@ -75,7 +75,7 @@ async def query(call: CallbackQuery, state: FSMContext, db: MDB):
 reply_markup=keyboards.ms_kb)
 
     if call.data == "ms":
-        await send_ms(call, db=db, state=state, ftype="call")
+        await ms(call, db=db, state=state, ftype="call")
 
     if call.data == "ms_1":
         await call.message.edit_text("Надішліть загальну кількість учнів в класі:", reply_markup=None)
@@ -92,16 +92,10 @@ reply_markup=keyboards.ms_kb)
 
     if call.data == "ms_accept":
         user = await db.users.find_one({"_id": call.message.chat.id})
-        user_class = user["class"]
+        user_class = user["class"].split('-')
         data = await state.get_data()
         try:
-            if user_class[1].isdigit():
-                ucn = int(user_class[0]+user_class[1])
-                ucl = user_class[3]
-            else:
-                ucn = int(user_class[0])
-                ucl = user_class[2]
-            update_info_ms(class_letter=ucl, class_number=ucn, 
+            update_info_ms(class_number=user_class[0], class_letter=user_class[1],
                             class_student=data["students_number"], present_students=int(data["students_number"])-int(data["ms_number"]),
                             ms_number_hv=data["ms_number_hv"], ms_students=data["ms"])
             await state.clear()
@@ -125,7 +119,7 @@ reply_markup=keyboards.book_subject_kb(await db.users.find_one({"_id": call.mess
             await call.message.answer("Додатково", reply_markup=keyboards.details_kb)
     
     if call.data == "confirm_person":
-        await send_confirm_person(call.message)
+        await confirm_person(call.message)
 
     if call.data == "confirm_person_email":
         await call.message.edit_text("Надішліть свій шкільний email:")

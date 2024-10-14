@@ -27,7 +27,7 @@ def send_email(receiver, text):
 
 class ConsoleRedirector:
     def __init__(self):
-        self.bot = telebot.TeleBot("8032219145:AAF11hJJP3In0kU8Vk8ZI8UmayvLBgfDy8g")
+        self.bot = telebot.TeleBot(config.bot_log_token)
         self.db = MongoClient(config.mongo_api).ILdb
         self.console = sys.stdout
         
@@ -41,3 +41,10 @@ class ConsoleRedirector:
 
     def flush(self):
         pass  # Для совместимости с интерфейсом sys.stdout
+
+def get_chat_id(message):
+    if hasattr(message, 'chat'):
+        id = message.chat.id
+    else:
+        id = message.message.chat.id
+    return id
