@@ -22,31 +22,41 @@ async def send_email_code(message: Message, email: str, state: FSMContext):
 
     verify_codes[message.chat.id] = code
 
-    send_email(receiver=email, text=f"""
+    send_email(
+        receiver=email,
+        text=f"""
 Привіт!
 
 Твій верифікаційний код: {code}
 
 Якщо ви не очікували цього повідомлення, просто проігноруйте його.
-""")
-    await message.answer("Код успішно надіслано ✅", reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(
-            text="Надіслати ще раз",
-            callback_data="send_email_code"
-        )
-    ]]))
+""",
+    )
+    await message.answer(
+        "Код успішно надіслано ✅",
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="Надіслати ще раз", callback_data="send_email_code"
+                    )
+                ]
+            ]
+        ),
+    )
     await state.set_state(ConfirmPerson.email_code)
 
 
 @router.message(ConfirmPerson.email)
 async def handle_email(message: Message, state: FSMContext):
     await send_email_code(message, message.text, state)
-    
+
 
 @router.message(ConfirmPerson.email_code)
 async def handle_email_code(message: Message, bot: Bot, db: MDB):
     text = message.text
 
     if verify_codes[message.chat.id] == text:
-        await db.users.update_one({"_id": message.chat.id}, {"$pull": {"tags": "verified"}})
-
+        await db.users.update_one(
+            {"_id": message.chat.id}, {"$pull": {"tags": "verified"}}
+        )

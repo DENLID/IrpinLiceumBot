@@ -16,15 +16,15 @@ import config
 router = Router()
 
 airalert_list = {
-    "never": "<b>не</b> отримуєте повідомлення", 
-    "st": "отримуєте повідомлення <b>в шкільний час</b>", 
-    "always": "<b>завжди</b> отримуєте повідомлення"
+    "never": "<b>не</b> отримуєте повідомлення",
+    "st": "отримуєте повідомлення <b>в шкільний час</b>",
+    "always": "<b>завжди</b> отримуєте повідомлення",
 }
 
 
 @router.callback_query(F.data.in_(["help_zvazok", "comm_help"]))
 async def help_zvazok_callback(call: CallbackQuery):
-    text="""
+    text = """
 <b><i>Чому мені не відповіли адміни?</i></b> 
 
 1. Бот знаходився на технійчній перерві. Зазвичай ми повідомляємо про технічну перерву.
@@ -45,46 +45,65 @@ async def query(call: CallbackQuery, state: FSMContext, db: MDB):
         await menu(call, "call")
     if call.data == "comm":
         await state.set_state(Communication.mess)
-        await call.message.edit_text(text="""
+        await call.message.edit_text(
+            text="""
 Надішліть ваше запитання або пропозицію. Якщо вам протягом 2 годин нічого не відповіли, то натисніть кнопку 👉 <b>Я не отримав відповіді</b>
-""", reply_markup=keyboards.comm_kb)
-            
+""",
+            reply_markup=keyboards.comm_kb,
+        )
+
     if call.data == "help":
         await help(call, "call")  
 
     if call.data == "help_command":
-        await call.message.edit_text(text="""
+        await call.message.edit_text(
+            text="""
 <b><i>Всі команди бота</i></b>
         
 /start - Запуск бота
 /menu - Меню
 /help - Допомога
-""", reply_markup=keyboards.back_help)
+""",
+            reply_markup=keyboards.back_help,
+        )
 
     if "airalert" in call.data:
         airalert_type = call.data.replace("airalert_", "")
         if airalert_type in ["never", "st", "always"]:
-            await db.users.update_one({"_id": call.message.chat.id}, {"$set": {"airalert": airalert_type}})
+            await db.users.update_one(
+                {"_id": call.message.chat.id}, {"$set": {"airalert": airalert_type}}
+            )
         user = await db.users.find_one({"_id": call.message.chat.id})
-        await call.message.edit_text(text=f"""
+        await call.message.edit_text(
+            text=f"""
 Виберіть коли ви хочете отримувати повідомлення повітряної тривоги/відбію. Наданий момент ви {airalert_list[user["airalert"]]}
-""", reply_markup=keyboards.airalert_kb_func(user["airalert"]))
-        
+""",
+            reply_markup=keyboards.airalert_kb_func(user["airalert"]),
+        )
+
     if call.data == "ms_decline":
-        await call.message.edit_text("Натисніть на кнопку Form, щоб перейти на форму заповнення відсутніх учнів в вашому класі.", 
-reply_markup=keyboards.ms_kb)
+        await call.message.edit_text(
+            "Натисніть на кнопку Form, щоб перейти на форму заповнення відсутніх учнів в вашому класі.",
+            reply_markup=keyboards.ms_kb,
+        )
 
     if call.data == "ms":
         await ms(call, db=db, state=state, ftype="call")
 
     if call.data == "ms_1":
-        await call.message.edit_text("Надішліть загальну кількість учнів в класі:", reply_markup=None)
+        await call.message.edit_text(
+            "Надішліть загальну кількість учнів в класі:", reply_markup=None
+        )
         await state.set_state(MS_state.students_number)
     if call.data == "ms_2":
-        await call.message.edit_text("Надішліть кількість відсутніх учнів в класі:", reply_markup=None)
+        await call.message.edit_text(
+            "Надішліть кількість відсутніх учнів в класі:", reply_markup=None
+        )
         await state.set_state(MS_state.ms_number)
     if call.data == "ms_3":
-        await call.message.edit_text("Надішліть кількість хворих із відсутніх:", reply_markup=None)
+        await call.message.edit_text(
+            "Надішліть кількість хворих із відсутніх:", reply_markup=None
+        )
         await state.set_state(MS_state.ms_number_hv)
     if call.data == "ms_4":
         await call.message.edit_text("Надішліть відсутніх:", reply_markup=None)
@@ -95,7 +114,13 @@ reply_markup=keyboards.ms_kb)
         user_class = user["class"].split('-')
         data = await state.get_data()
         try:
-            update_info_ms(class_number=user_class[0], class_letter=user_class[1],
+            if user_class[1].isdigit():
+                ucn = int(user_class[0]+user_class[1])
+                ucl = user_class[3]
+            else:
+                ucn = int(user_class[0])
+                ucl = user_class[2]
+            update_info_ms(class_letter=ucl, class_number=ucn, 
                             class_student=data["students_number"], present_students=int(data["students_number"])-int(data["ms_number"]),
                             ms_number_hv=data["ms_number_hv"], ms_students=data["ms"])
             await state.clear()
@@ -104,20 +129,28 @@ reply_markup=keyboards.ms_kb)
             await call.answer("Будь ласка, заповніть всі пункти!", show_alert=True)
 
     if call.data == "books":
-        await call.message.edit_text("Виберіть предмет підручника",
-reply_markup=keyboards.book_subject_kb(await db.users.find_one({"_id": call.message.chat.id})))
-        
+        await call.message.edit_text(
+            "Виберіть предмет підручника",
+            reply_markup=keyboards.book_subject_kb(
+                await db.users.find_one({"_id": call.message.chat.id})
+            ),
+        )
+
     if call.data == "dzvinki":
         await call.message.delete()
-        await call.message.answer_photo(photo=FSInputFile("dzvinki.jpg"), reply_markup=keyboards.back_details)
+        await call.message.answer_photo(
+            photo=FSInputFile("dzvinki.jpg"), reply_markup=keyboards.back_details
+        )
 
     if call.data == "details":
         try:
-            await call.message.edit_text("<b>Додатково</b>", reply_markup=keyboards.details_kb)
+            await call.message.edit_text(
+                "<b>Додатково</b>", reply_markup=keyboards.details_kb
+            )
         except:
             await call.message.delete()
             await call.message.answer("Додатково", reply_markup=keyboards.details_kb)
-    
+
     if call.data == "confirm_person":
         await confirm_person(call.message)
 
@@ -130,4 +163,3 @@ reply_markup=keyboards.book_subject_kb(await db.users.find_one({"_id": call.mess
 
     if call.data == "comming":
         await call.answer("В розробці", show_alert=True)
-
