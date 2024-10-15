@@ -3,6 +3,7 @@ from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, Bot, F
 from motor.core import AgnosticDatabase as MDB
+import aiocron
 
 from filters.filters import IsAdmin, CheckArg, HasTag
 import keyboards.keyboards as keyboards
@@ -25,13 +26,13 @@ async def start(message: Message, db: MDB) -> None:
 
 
     if await db.users.count_documents({"_id": id}) == 0:
-        await db.users.insert_one(
-    {
-        "_id": id,
-        "username": message.from_user.username,
-        "airalert": "never",
-        "tags": []
-    })
+        await db.users.insert_one({
+            "_id": id,
+            "username": message.from_user.username,
+            "airalert": "never",
+            "balance": 0,
+            "tags": [],
+        })
     else:
         if (await db.users.find_one({"_id": id}))["username"] != message.from_user.username:
             await db.users.update_one({"_id": id}, {"$set": {"username": message.from_user.username}})
@@ -234,11 +235,11 @@ async def start_badge(message: Message, db: MDB, state: FSMContext):
 
 @router.message(Command('confirm_person'))
 async def confirm_person(message: Message):
-    await send_confirm_person(message)
-
-async def send_confirm_person(message):
     try:
         await message.edit_text("Виберіть спосіб підтвердження особи", reply_markup=keyboards.confirm_person_kb)
     except:
         await message.answer("Виберіть спосіб підтвердження особи", reply_markup=keyboards.confirm_person_kb)
 
+@router.message(Command('hbd'))
+async def happy_birthday_denlid(message: Message, bot: Bot):
+    bot.send_message(1055097116, """""")
