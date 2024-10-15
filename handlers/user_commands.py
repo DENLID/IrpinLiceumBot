@@ -16,36 +16,46 @@ router = Router()
 async def start(message: Message, db: MDB) -> None:
     id = int(message.chat.id)
 
-    print({
-        "id": id, 
-        "name": message.from_user.full_name, 
-        "username": message.from_user.username
-    })
-
+    print(
+        {
+            "id": id,
+            "name": message.from_user.full_name,
+            "username": message.from_user.username,
+        }
+    )
 
     if await db.users.count_documents({"_id": id}) == 0:
         await db.users.insert_one(
-    {
-        "_id": int(message.chat.id),
-        "username": message.from_user.username,
-        "airalert": "never",
-        "tags": []
-    })
+            {
+                "_id": int(message.chat.id),
+                "username": message.from_user.username,
+                "airalert": "never",
+                "tags": [],
+            }
+        )
     else:
-        if (await db.users.find_one({"_id": id}))["username"] != message.from_user.username:
-            await db.users.update_one({"_id": id}, {"$set": {"username": message.from_user.username}})
+        if (await db.users.find_one({"_id": id}))[
+            "username"
+        ] != message.from_user.username:
+            await db.users.update_one(
+                {"_id": id}, {"$set": {"username": message.from_user.username}}
+            )
 
-    await message.answer(text="""
+    await message.answer(
+        text="""
 Привіт, я телеграм бот
 ірпінського ліцею №2!
 Щоб перейти до меню
 натисніть кнопку знизу 👇
-""", reply_markup = keyboards.start_kb)
+""",
+        reply_markup=keyboards.start_kb,
+    )
 
 
-@router.message(Command('menu'))
+@router.message(Command("menu"))
 async def menu(message: Message):
     await send_menu(message, "command")
+
 
 async def send_menu(message, ftype):
     text = """
@@ -56,21 +66,24 @@ async def send_menu(message, ftype):
     elif ftype == "command":
         await message.answer(text=text, reply_markup=keyboards.menu_kb)
 
-@router.message(Command('help'))
+
+@router.message(Command("help"))
 async def help(message: Message):
     await send_help(message, "command")
+
 
 async def send_help(message, ftype: str):
     text = "Виберіть запитання яке вас цікавить"
     if ftype == "command":
-        await message.answer(text, reply_markup = keyboards.help_kb_command)
+        await message.answer(text, reply_markup=keyboards.help_kb_command)
     elif ftype == "call":
-        await message.message.edit_text(text, reply_markup = keyboards.help_kb_menu)
-    
-    
-@router.message(Command('ms'), HasTag("ms_admin"))
+        await message.message.edit_text(text, reply_markup=keyboards.help_kb_menu)
+
+
+@router.message(Command("ms"), HasTag("ms_admin"))
 async def ms(message: Message, db: MDB, state: FSMContext):
     await send_ms(message=message, db=db, state=state, ftype="command")
+
 
 async def send_ms(message, db: MDB, state: FSMContext, ftype: str):
     try:
@@ -104,11 +117,14 @@ async def send_ms(message, db: MDB, state: FSMContext, ftype: str):
         await message.message.edit_text(text, reply_markup=keyboards.ms_kb)
 
 
-@router.message(Command('ms_xlsx'), HasTag("ms_admin"))
+@router.message(Command("ms_xlsx"), HasTag("ms_admin"))
 async def ms_xlsx(message: Message):
-    await message.answer_document(document=FSInputFile(config.path_ms), caption="Список відсутніх учнів в школі")
-    
-@router.message(Command('news'), or_f(IsAdminChat(), IsAdmin()))
+    await message.answer_document(
+        document=FSInputFile(config.path_ms), caption="Список відсутніх учнів в школі"
+    )
+
+
+@router.message(Command("news"), or_f(IsAdminChat(), IsAdmin()))
 async def news(message: Message, bot: Bot, command: CommandObject, db: MDB):
     text = command.args
     tag = text.split()[0]
@@ -123,14 +139,17 @@ async def news(message: Message, bot: Bot, command: CommandObject, db: MDB):
     if exist != 0:
         async for user in users:
             try:
-                await bot.send_message(chat_id=user["_id"], text=text.replace(tag, "", 1))
+                await bot.send_message(
+                    chat_id=user["_id"], text=text.replace(tag, "", 1)
+                )
             except:
                 pass
         await message.answer(f"Повідомлення успішно розіслано ✅")
     else:
         await message.answer(f"Користувачів з тегом <code>{tag}</code> не знайдено ❌")
 
-@router.message(Command('ban'), or_f(IsAdminChat(), IsAdmin()))
+
+@router.message(Command("ban"), or_f(IsAdminChat(), IsAdmin()))
 async def ban(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     chat_id = int(args[0])
@@ -138,15 +157,15 @@ async def ban(message: Message, command: CommandObject, db: MDB):
     user_exist = await db.users.find_one({"_id": chat_id})
     if user_exist != None:
         username = user_exist["username"]
-        await db.ban_list.insert_one({
-            "_id": id,
-            "username": username
-        })
-        await message.answer(f"Користувачу з ID: <code>{chat_id}</code> успішно забанений ✅")
+        await db.ban_list.insert_one({"_id": id, "username": username})
+        await message.answer(
+            f"Користувачу з ID: <code>{chat_id}</code> успішно забанений ✅"
+        )
     else:
         await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
-        
-@router.message(Command('unban'), or_f(IsAdminChat(), IsAdmin()))
+
+
+@router.message(Command("unban"), or_f(IsAdminChat(), IsAdmin()))
 async def ban(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     chat_id = int(args[0])
@@ -154,16 +173,15 @@ async def ban(message: Message, command: CommandObject, db: MDB):
     user_exist = await db.users.find_one({"_id": chat_id})
     if user_exist != None:
         username = user_exist["username"]
-        await db.ban_list.delete_one({
-            "_id": chat_id,
-            "username": username
-        })
-        await message.answer(f"Користувачу з ID: <code>{chat_id}</code> успішно розбанений ✅")
+        await db.ban_list.delete_one({"_id": chat_id, "username": username})
+        await message.answer(
+            f"Користувачу з ID: <code>{chat_id}</code> успішно розбанений ✅"
+        )
     else:
         await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
 
 
-@router.message(Command('add_tag'), or_f(IsAdminChat(), IsAdmin()))
+@router.message(Command("add_tag"), or_f(IsAdminChat(), IsAdmin()))
 async def add_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     identifier = args[0]
@@ -173,7 +191,7 @@ async def add_tag(message: Message, command: CommandObject, db: MDB):
         chat_id = int(identifier)
         user = await db.users.find_one({"_id": chat_id})
     else:
-        username = identifier.lstrip('@')
+        username = identifier.lstrip("@")
         user = await db.users.find_one({"username": username})
 
     if user != None:
@@ -182,7 +200,8 @@ async def add_tag(message: Message, command: CommandObject, db: MDB):
     else:
         await message.answer(f"Користувач не знайдений ❌")
 
-@router.message(Command('remove_tag'), or_f(IsAdminChat(), IsAdmin()))
+
+@router.message(Command("remove_tag"), or_f(IsAdminChat(), IsAdmin()))
 async def delete_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     identifier = args[0]
@@ -191,7 +210,7 @@ async def delete_tag(message: Message, command: CommandObject, db: MDB):
     if identifier.isdigit():
         user = await db.users.find_one({"_id": int(identifier)})
     else:
-        username = identifier.lstrip('@')
+        username = identifier.lstrip("@")
         user = await db.users.find_one({"username": username})
 
     if user != None:
@@ -200,7 +219,8 @@ async def delete_tag(message: Message, command: CommandObject, db: MDB):
     else:
         await message.answer(f"Користувач не знайдений ❌")
 
-@router.message(Command('info'), or_f(IsAdminChat(), IsAdmin()))
+
+@router.message(Command("info"), or_f(IsAdminChat(), IsAdmin()))
 async def delete_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     identifier = args[0]
@@ -208,21 +228,24 @@ async def delete_tag(message: Message, command: CommandObject, db: MDB):
     if identifier.isdigit():
         user = await db.users.find_one({"_id": int(identifier)})
     else:
-        username = identifier.lstrip('@')
+        username = identifier.lstrip("@")
         user = await db.users.find_one({"username": username})
 
     if user != None:
-        await message.answer(f"""
+        await message.answer(
+            f"""
 Інформація про користувача:
 ID: <code>{user["_id"]}</code>
 username: @{user["username"]}
 airalert: {user["airalert"]}
 tags: {user["tags"]}
-""")
+"""
+        )
     else:
         await message.answer(f"Користувач не знайдений ❌")
 
-@router.message(Command('set'), or_f(IsAdminChat(), IsAdmin()))
+
+@router.message(Command("set"), or_f(IsAdminChat(), IsAdmin()))
 async def confirm_person(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     identifier = args[0]
@@ -230,7 +253,7 @@ async def confirm_person(message: Message, command: CommandObject, db: MDB):
     if identifier.isdigit():
         user = await db.users.find_one({"_id": int(identifier)})
     else:
-        username = identifier.lstrip('@')
+        username = identifier.lstrip("@")
         user = await db.users.find_one({"username": username})
 
     if user != None:
@@ -238,21 +261,26 @@ async def confirm_person(message: Message, command: CommandObject, db: MDB):
         await message.answer(f"Успішно ✅")
     else:
         await message.answer(f"Користувач не знайдений ❌")
-    
 
-@router.message(Command('getmyid'))
+
+@router.message(Command("getmyid"))
 async def getmyid(message: Message):
-    await message.answer(f"""
+    await message.answer(
+        f"""
 Ваш телеграм айді: <code>{message.from_user.id}</code>
-Ваш телеграм чат айді: <code>{message.chat.id}</code>""")  
+Ваш телеграм чат айді: <code>{message.chat.id}</code>"""
+    )
 
-@router.message(Command('register_student'))
+
+@router.message(Command("register_student"))
 async def register_student(message: Message):
     await message.answer("В розробці 🛠")
 
+
 @router.message(CommandStart(), CheckArg("backpack_badge"))
 async def start_badge(message: Message, db: MDB, state: FSMContext):
-    await message.answer("""
+    await message.answer(
+        """
 💛 Привіт, учні! 💙
 
 🌟 Сьогодні ми запускаємо благодійну акцію! Відтепер у вас є можливість прикрасити свій рюкзак яскравими та стильними значками.
@@ -264,15 +292,24 @@ async def start_badge(message: Message, db: MDB, state: FSMContext):
 📅 Забрати свій значок можна буде у понеділок, з 10:00 до 14:00. Запрошуємо всіх бажаючих долучитися!
 
 Разом до перемоги! 💛💙
-""", reply_markup=keyboards.buy_badge_kb)
+""",
+        reply_markup=keyboards.buy_badge_kb,
+    )
 
-@router.message(Command('confirm_person'))
+
+@router.message(Command("confirm_person"))
 async def confirm_person(message: Message):
     await send_confirm_person(message)
 
+
 async def send_confirm_person(message):
     try:
-        await message.edit_text("Виберіть спосіб підтвердження особи", reply_markup=keyboards.confirm_person_kb)
+        await message.edit_text(
+            "Виберіть спосіб підтвердження особи",
+            reply_markup=keyboards.confirm_person_kb,
+        )
     except:
-        await message.answer("Виберіть спосіб підтвердження особи", reply_markup=keyboards.confirm_person_kb)
-
+        await message.answer(
+            "Виберіть спосіб підтвердження особи",
+            reply_markup=keyboards.confirm_person_kb,
+        )

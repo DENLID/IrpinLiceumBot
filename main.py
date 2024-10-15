@@ -7,12 +7,20 @@ from threading import Thread
 import sys
 
 from errors import errors
-from handlers import user_commands, air_alert, communication, webappdata, ms, confirm_person
+from handlers import (
+    user_commands,
+    air_alert,
+    communication,
+    webappdata,
+    ms,
+    confirm_person,
+)
 from callbacks import callbacks
 from air_alert.air_alert import pull_air_alert
 from middlewares.anti_flood import AntiFloodMiddleware
 from utils.utils import ConsoleRedirector
 import config
+
 
 async def main():
     bot = Bot(config.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
@@ -31,17 +39,16 @@ async def main():
         confirm_person.router,
         ms.router,
         callbacks.router,
-        errors.router
+        errors.router,
     )
 
     Thread(target=pull_air_alert).start()
     sys.stdout = ConsoleRedirector()
 
-    #logging.basicConfig(level=logging.INFO)
+    # logging.basicConfig(level=logging.INFO)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, db=db)
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-

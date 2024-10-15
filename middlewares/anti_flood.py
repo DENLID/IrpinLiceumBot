@@ -6,15 +6,15 @@ import config
 
 
 class AntiFloodMiddleware(BaseMiddleware):
-    def __init__(self, time_limit: int=2) -> None:
+    def __init__(self, time_limit: int = 2) -> None:
         self.limit = TTLCache(maxsize=10_000, ttl=time_limit)
 
     async def __call__(
-        self, 
-        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]], 
-        event: TelegramObject, 
-        data: Dict[str, Any]
-    ) -> Any:     
+        self,
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: TelegramObject,
+        data: Dict[str, Any],
+    ) -> Any:
         if event.chat.id in self.limit:
             return
         else:
