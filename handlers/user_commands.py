@@ -1,12 +1,12 @@
-from aiogram.filters import Command, CommandStart, CommandObject, or_f
+from aiogram.filters import Command, CommandStart, CommandObject
 from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, Bot, F
 from motor.core import AgnosticDatabase as MDB
 
-from filters.filters import IsAdminChat, IsAdmin, CheckArg, HasTag
-from utils.utils import get_chat_id
+from filters.filters import IsAdmin, CheckArg, HasTag
 import keyboards.keyboards as keyboards
+from utils.utils import *
 import config
 
 
@@ -27,7 +27,7 @@ async def start(message: Message, db: MDB) -> None:
     if await db.users.count_documents({"_id": id}) == 0:
         await db.users.insert_one(
     {
-        "_id": int(message.chat.id),
+        "_id": id,
         "username": message.from_user.username,
         "airalert": "never",
         "tags": []
@@ -81,7 +81,7 @@ async def ms(message: Message, db: MDB, state: FSMContext, ftype: str = None):
 
 Виберіть пункт, який хочете редагувати:"""
 
-    if ftype == "command":
+    if ftype == "call":
         await message.message.edit_text(text, reply_markup=keyboards.ms_kb)
     else:
         await message.answer(text, reply_markup=keyboards.ms_kb)
@@ -152,12 +152,7 @@ async def add_tag(message: Message, command: CommandObject, db: MDB):
     identifier = args[0]
     tag = args[1]
 
-    if identifier.isdigit():
-        chat_id = int(identifier)
-        user = await db.users.find_one({"_id": chat_id})
-    else:
-        username = identifier.lstrip('@')
-        user = await db.users.find_one({"username": username})
+    user = get_user(identifier, db)
 
     if user != None:
         await db.users.update_one({"_id": user["_id"]}, {"$push": {"tags": tag}})
@@ -171,11 +166,7 @@ async def delete_tag(message: Message, command: CommandObject, db: MDB):
     identifier = args[0]
     tag = args[1]
 
-    if identifier.isdigit():
-        user = await db.users.find_one({"_id": int(identifier)})
-    else:
-        username = identifier.lstrip('@')
-        user = await db.users.find_one({"username": username})
+    user = get_user(identifier, db)
 
     if user != None:
         await db.users.update_one({"_id": user["_id"]}, {"$pull": {"tags": tag}})
@@ -188,11 +179,7 @@ async def delete_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     identifier = args[0]
 
-    if identifier.isdigit():
-        user = await db.users.find_one({"_id": int(identifier)})
-    else:
-        username = identifier.lstrip('@')
-        user = await db.users.find_one({"username": username})
+    user = get_user(identifier, db)
 
     if user != None:
         await message.answer(f"""
@@ -210,11 +197,7 @@ async def confirm_person(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     identifier = args[0]
 
-    if identifier.isdigit():
-        user = await db.users.find_one({"_id": int(identifier)})
-    else:
-        username = identifier.lstrip('@')
-        user = await db.users.find_one({"username": username})
+    user = get_user(identifier, db)
 
     if user != None:
         await db.users.update_one({"_id": user["_id"]}, {"$set": {args[1]: args[2]}})

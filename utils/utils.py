@@ -1,4 +1,5 @@
 from update_info.update_info import alphabet_ukr
+from motor.core import AgnosticDatabase as MDB
 from email.mime.text import MIMEText
 from pymongo import MongoClient
 import smtplib, sys, telebot
@@ -48,3 +49,11 @@ def get_chat_id(message):
     else:
         id = message.message.chat.id
     return id
+
+async def get_user(identifier, db: MDB):
+    if identifier.isdigit():
+        user = await db.users.find_one({"_id": int(identifier)})
+    else:
+        username = identifier.lstrip('@')
+        user = await db.users.find_one({"username": username})
+    return user
