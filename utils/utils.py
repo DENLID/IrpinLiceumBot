@@ -8,6 +8,11 @@ import config
 all_class = [f"{n}-{l}" for n in range(11) for l in alphabet_ukr]
 
 
+def read_wordlist():
+    with open(config.path_wordlist, "r", encoding="utf-8") as wordlist:
+        return [line.strip() for line in wordlist.readlines()]
+
+
 def send_email(receiver, text):
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()

@@ -7,7 +7,8 @@ from motor.core import AgnosticDatabase as MDB
 from filters.filters import IsAdminChat, IsAdmin, CheckArg, HasTag
 import keyboards.keyboards as keyboards
 import config
-
+from utils.utils import read_wordlist
+import random
 
 router = Router()
 
@@ -313,3 +314,80 @@ async def send_confirm_person(message):
             "Виберіть спосіб підтвердження особи",
             reply_markup=keyboards.confirm_person_kb,
         )
+
+
+@router.message(Command("quiz"))
+async def quiz(message: Message, state: FSMContext):
+    # Тут по іншому треба таємне слово та підказку вибирати. Можливо через окрему команду для адмінів
+    wordlist = read_wordlist()
+    secret_word = random.choice(wordlist)
+    secret_word_length = len(secret_word)
+    hint = "Підказка"
+    await state.update_data(
+        wordlist=wordlist,
+        secret_word=secret_word,
+        attempts=0,
+        secret_word_length=secret_word_length,
+    )
+
+    await message.answer(
+        f"""
+Вікторина тижня!
+Вгадай слово на {secret_word_length} букв та здобуй 10 токенів.
+Підказка: {hint}
+
+🟩 - Буква вгадана
+🟨 - Буква є в слові, але не на свому місці
+🔳 - Буква не вгадана
+"""
+    )
+
+
+@router.message(F.text)
+async def handle_guess(message: Message, state: FSMContext):
+    user_data = await state.get_data()
+    wordlist = user_data.get("wordlist")
+    secret_word = user_data.get("secret_word")
+    secret_word_length = user_data.get("secret_word_length")
+    attempts = user_data.get("attempts")
+
+    guess = message.text.lower()
+
+    if len(guess) != secret_word_length:
+        await message.answer(f"Слово повинно складатися з {secret_word_length} букв ❌")
+        return
+
+    attempts += 1
+    await state.update_data(attempts=attempts)
+
+    if guess not in wordlist:
+        await message.answer("Цього слова немає в списку. Спробуй ще раз! ❌")
+        return
+
+    if guess == secret_word:
+        await message.answer(
+            "Молодець! Ти відгадав слово тому на твій баланс було поповнено 10 токенів! 😊"
+        )
+        # TODO: Поповнення токенів
+        await state.clear()
+    else:
+        feedback = []
+        secret_word_list = list(secret_word)
+        guess_list = list(guess)
+
+        for i in range(5):
+            if guess_list[i] == secret_word_list[i]:
+                feedback.append("🟩")
+                secret_word_list[i] = None
+                guess_list[i] = None
+            else:
+                feedback.append("🔳")
+
+        for i in range(5):
+            if guess_list[i] is not None and guess_list[i] in secret_word_list:
+                feedback[i] = "🟨"
+                secret_word_list[secret_word_list.index(guess_list[i])] = None
+
+        feedback_str = "".join(feedback)
+
+        await message.answer(f"Гарна спроба, але невдача 😔\n\n{feedback_str}")
