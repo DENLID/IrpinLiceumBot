@@ -6,7 +6,7 @@ from motor.core import AgnosticDatabase as MDB
 
 from handlers.user_commands import menu, help, ms, confirm_person
 from handlers.confirm_person import send_email_code
-from utils.states import Communication, MS_state, ConfirmPerson
+from utils.states import *
 from update_info.update_info import update_info_ms
 from keyboards.keyboards import MsCallback
 import keyboards.keyboards as keyboards
@@ -130,7 +130,7 @@ async def query(call: CallbackQuery, state: FSMContext, db: MDB):
 
     if call.data == "books":
         await call.message.edit_text(
-            "Виберіть предмет підручника",
+            text="Виберіть предмет підручника",
             reply_markup=keyboards.book_subject_kb(
                 await db.users.find_one({"_id": call.message.chat.id})
             ),

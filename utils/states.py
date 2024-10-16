@@ -22,3 +22,6 @@ class ConfirmPerson(StatesGroup):
     email = State()
     email_code = State()
     phone = State()
+
+class Quiz(StatesGroup):
+    word = State()

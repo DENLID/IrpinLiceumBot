@@ -46,3 +46,19 @@ class ConsoleRedirector:
 
     def flush(self):
         pass  # Для совместимости с интерфейсом sys.stdout
+
+
+def get_chat_id(message):
+    if hasattr(message, 'chat'):
+        id = message.chat.id
+    else:
+        id = message.message.chat.id
+    return id
+
+async def get_user(identifier, db: MDB):
+    if identifier.isdigit():
+        user = await db.users.find_one({"_id": int(identifier)})
+    else:
+        username = identifier.lstrip('@')
+        user = await db.users.find_one({"username": username})
+    return user

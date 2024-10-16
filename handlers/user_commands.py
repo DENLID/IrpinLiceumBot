@@ -4,9 +4,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram import Router, Bot, F
 from motor.core import AgnosticDatabase as MDB
 import aiocron
+import random
 
 from filters.filters import IsAdmin, CheckArg, HasTag
 import keyboards.keyboards as keyboards
+from utils.states import *
 from utils.utils import *
 import config
 
@@ -19,11 +21,10 @@ async def start(message: Message, db: MDB) -> None:
     id = int(message.chat.id)
 
     print({
-        "id": id, 
-        "name": message.from_user.full_name, 
+        "id": id,
+        "name": message.from_user.full_name,
         "username": message.from_user.username
     })
-
 
     if await db.users.count_documents({"_id": id}) == 0:
         await db.users.insert_one({
@@ -42,7 +43,7 @@ async def start(message: Message, db: MDB) -> None:
 ірпінського ліцею №2!
 Щоб перейти до меню
 натисніть кнопку знизу 👇
-""", reply_markup = keyboards.start_kb)
+""", reply_markup=keyboards.start_kb)
 
 
 @router.message(Command('menu'))
@@ -55,15 +56,16 @@ async def menu(message: Message, ftype: str = None):
     else:
         await message.answer(text=text, reply_markup=keyboards.menu_kb)
 
+
 @router.message(Command('help'))
 async def help(message: Message, ftype: str = None):
     text = "Виберіть запитання яке вас цікавить"
     if ftype == "call":
-        await message.message.edit_text(text, reply_markup = keyboards.help_kb_menu)
+        await message.message.edit_text(text, reply_markup=keyboards.help_kb_menu)
     else:
-        await message.answer(text, reply_markup = keyboards.help_kb_command)
-    
-    
+        await message.answer(text, reply_markup=keyboards.help_kb_command)
+
+
 @router.message(Command('ms'), HasTag("ms_admin"))
 async def ms(message: Message, db: MDB, state: FSMContext, ftype: str = None):
     id = get_chat_id(message)
@@ -91,7 +93,8 @@ async def ms(message: Message, db: MDB, state: FSMContext, ftype: str = None):
 @router.message(Command('ms_xlsx'), HasTag("ms_admin"))
 async def ms_xlsx(message: Message):
     await message.answer_document(document=FSInputFile(config.path_ms), caption="Список відсутніх учнів в школі")
-    
+
+
 @router.message(Command('news'), IsAdmin())
 async def news(message: Message, bot: Bot, command: CommandObject, db: MDB):
     text = command.args
@@ -114,6 +117,7 @@ async def news(message: Message, bot: Bot, command: CommandObject, db: MDB):
     else:
         await message.answer(f"Користувачів з тегом <code>{tag}</code> не знайдено ❌")
 
+
 @router.message(Command('ban'), IsAdmin())
 async def ban(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
@@ -129,7 +133,8 @@ async def ban(message: Message, command: CommandObject, db: MDB):
         await message.answer(f"Користувачу з ID: <code>{chat_id}</code> успішно забанений ✅")
     else:
         await message.answer(f"Користувач з ID: <code>{chat_id}</code> не знайдений ❌")
-        
+
+
 @router.message(Command('unban'), IsAdmin())
 async def ban(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
@@ -153,7 +158,7 @@ async def add_tag(message: Message, command: CommandObject, db: MDB):
     identifier = args[0]
     tag = args[1]
 
-    user = get_user(identifier, db)
+    user = await get_user(identifier, db)
 
     if user != None:
         await db.users.update_one({"_id": user["_id"]}, {"$push": {"tags": tag}})
@@ -161,19 +166,21 @@ async def add_tag(message: Message, command: CommandObject, db: MDB):
     else:
         await message.answer(f"Користувач не знайдений ❌")
 
+
 @router.message(Command('remove_tag'), IsAdmin())
 async def delete_tag(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
     identifier = args[0]
     tag = args[1]
 
-    user = get_user(identifier, db)
+    user = await get_user(identifier, db)
 
     if user != None:
         await db.users.update_one({"_id": user["_id"]}, {"$pull": {"tags": tag}})
-        await message.answer(f"Користувач успішно отримав тег <code>{tag}</code> ✅")
+        await message.answer(f"Користувач успішно втратив тег <code>{tag}</code> ✅")
     else:
         await message.answer(f"Користувач не знайдений ❌")
+
 
 @router.message(Command('info'), IsAdmin())
 async def delete_tag(message: Message, command: CommandObject, db: MDB):
@@ -193,6 +200,7 @@ tags: {user["tags"]}
     else:
         await message.answer(f"Користувач не знайдений ❌")
 
+
 @router.message(Command('set'), IsAdmin())
 async def confirm_person(message: Message, command: CommandObject, db: MDB):
     args = command.args.split()
@@ -205,17 +213,20 @@ async def confirm_person(message: Message, command: CommandObject, db: MDB):
         await message.answer(f"Успішно ✅")
     else:
         await message.answer(f"Користувач не знайдений ❌")
-    
+
 
 @router.message(Command('getmyid'))
 async def getmyid(message: Message):
     await message.answer(f"""
 Ваш телеграм айді: <code>{message.from_user.id}</code>
-Ваш телеграм чат айді: <code>{message.chat.id}</code>""")  
+Ваш телеграм чат айді: <code>{message.chat.id}</code>
+""")
+
 
 @router.message(Command('register_student'))
 async def register_student(message: Message):
     await message.answer("В розробці 🛠")
+
 
 @router.message(CommandStart(), CheckArg("backpack_badge"))
 async def start_badge(message: Message, db: MDB, state: FSMContext):
@@ -233,12 +244,95 @@ async def start_badge(message: Message, db: MDB, state: FSMContext):
 Разом до перемоги! 💛💙
 """, reply_markup=keyboards.buy_badge_kb)
 
+
 @router.message(Command('confirm_person'))
 async def confirm_person(message: Message):
     try:
-        await message.edit_text("Виберіть спосіб підтвердження особи", reply_markup=keyboards.confirm_person_kb)
+        await message.edit_text(
+            "Виберіть спосіб підтвердження особи",
+            reply_markup=keyboards.confirm_person_kb,
+        )
     except:
-        await message.answer("Виберіть спосіб підтвердження особи", reply_markup=keyboards.confirm_person_kb)
+        await message.answer(
+            "Виберіть спосіб підтвердження особи",
+            reply_markup=keyboards.confirm_person_kb,
+        )
+
+
+@router.message(Command("quiz"))
+async def quiz(message: Message, state: FSMContext):
+    # Тут по іншому треба таємне слово та підказку вибирати. Можливо через окрему команду для адмінів
+    wordlist = read_wordlist()
+    secret_word = random.choice(wordlist)
+    secret_word_length = len(secret_word)
+    hint = "Підказка"
+    await state.update_data(
+        wordlist=wordlist,
+        secret_word=secret_word,
+        attempts=0,
+        secret_word_length=secret_word_length,
+    )
+
+    await message.answer(
+        f"""
+<b>Вікторина тижня!</b>
+Вгадай слово на {secret_word_length} букв та здобуй 10 токенів.
+Підказка: {hint}
+
+🟩 - Буква вгадана
+🟨 - Буква є в слові, але не на свому місці
+🔳 - Буква не вгадана
+"""
+    )
+
+    await state.set_state(Quiz.word)
+
+
+@router.message(Quiz.word)
+async def handle_guess(message: Message, state: FSMContext):
+    user_data = await state.get_data()
+    wordlist = user_data.get("wordlist")
+    secret_word = user_data.get("secret_word")
+    secret_word_length = user_data.get("secret_word_length")
+    attempts = user_data.get("attempts")
+
+    guess = message.text.lower()
+
+    if len(guess) != secret_word_length:
+        await message.answer(f"Слово повинно складатися з {secret_word_length} букв ❌")
+        return
+
+    attempts += 1
+    await state.update_data(attempts=attempts)
+
+    if guess == secret_word:
+        await message.answer(
+            "Молодець! Ти відгадав слово тому на твій баланс було поповнено 10 токенів! 😊"
+        )
+        # TODO: Поповнення токенів
+        await state.clear()
+    else:
+        feedback = []
+        secret_word_list = list(secret_word)
+        guess_list = list(guess)
+
+        for i in range(5):
+            if guess_list[i] == secret_word_list[i]:
+                feedback.append("🟩")
+                secret_word_list[i] = None
+                guess_list[i] = None
+            else:
+                feedback.append("🔳")
+
+        for i in range(5):
+            if guess_list[i] is not None and guess_list[i] in secret_word_list:
+                feedback[i] = "🟨"
+                secret_word_list[secret_word_list.index(guess_list[i])] = None
+
+        feedback_str = "".join(feedback)
+
+        await message.answer(f"Гарна спроба, але невдача 😔\n\n{feedback_str}")
+
 
 @router.message(Command('hbd'))
 async def happy_birthday_denlid(message: Message, bot: Bot):
